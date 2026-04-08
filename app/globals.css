@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+:root {
+    background-color: rgb(37, 37, 37);
+    color: white;
+}
+
+body {
+    margin: 0;
+    font-family: var(--paragraph-font);
+}
+
+h1, h2 {
+    font-family: var(--header-font);
+}
+
+h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+h2 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
