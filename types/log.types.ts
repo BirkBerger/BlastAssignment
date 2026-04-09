@@ -1,6 +1,9 @@
 export interface Round {
     duration: number
-    score: [number, number]
+    status: {
+        score: [number, number],
+        teamSides: [number, number]
+    }
 }
 
 export interface WeaponUse {
@@ -24,6 +27,7 @@ export interface Player {
 }
 
 export interface ParsedLog {
+    teamNames: [string, string]
     rounds: Round[],
     players: { [id: string ]: Player }
 }

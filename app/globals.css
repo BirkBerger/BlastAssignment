@@ -3,6 +3,11 @@
 :root {
     background-color: rgb(37, 37, 37);
     color: white;
+
+    --ct-color: #5d79ae;
+    --terrorist-color: #de9b35;
+    --team-1-color: #FFFF00;
+    --team-2-color: #ff4901;
 }
 
 body {

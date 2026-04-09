@@ -1,4 +1,5 @@
 import { parseLog } from '@/lib/parseLog';
+import GameGraph from './components/GameGraph';
 
 async function Home() {
 
@@ -17,13 +18,13 @@ async function Home() {
                     <h1>
                         Hello world
                     </h1>
-                    { data && data.rounds.map((round, idx) => (
+                    <GameGraph rounds={data.rounds} teamNames={data.teamNames}></GameGraph>
+                    {/* { data && data.rounds.map((round, idx) => (
                         <div key={`round_${idx}`}>
                             { round.duration }<br></br>
-                            { round.score[0] }<br></br>
-                            { round.score[1] }<br></br>
+                            [{ round.status.score[0] } ; { round.status.score[1] }]
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </main>
         </div>
