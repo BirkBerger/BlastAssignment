@@ -7,7 +7,9 @@
     --ct-color: #5d79ae;
     --terrorist-color: #de9b35;
     --team-1-color: #FFFF00;
+    --team-1-color-dark: rgba(212, 212, 31, 0.663);
     --team-2-color: #ff4901;
+    --team-2-color-dark: rgba(219, 79, 24, 0.608);
 }
 
 body {

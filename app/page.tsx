@@ -19,11 +19,11 @@ async function Home() {
                         Hello world
                     </h1>
                     <GameGraph data={data}></GameGraph>
-                    { data && data.rounds.map((round, idx) => (
+                    {/* { data && data.rounds.map((round, idx) => (
                         <div key={`rounds_${idx}`}>
                             [{ round.status.moneySpend[0] }, { round.status.moneySpend[1] }]<br></br>
                         </div>
-                    ))}
+                    ))} */}
                     {/* { data && (
                         <div>
                             TEAMS { data.teamNames }

@@ -143,21 +143,24 @@ export class LogParser {
         const score1 = parseInt(this.matches.roundScore[1]);
         const score2 = parseInt(this.matches.roundScore[2]);
         const hasTeamSidesChanged = this.matches.ctTeam && this.matches.ctTeam[1] == this.teamNames[1];
-        this.rounds.push ({
+        const newRound = {
             duration: this.getTimeDiff(startTime, endTime),
             status: {
                 moneySpend: this.getTeamMoneySpend(),
-                teamSides: hasTeamSidesChanged ? [1, 0] : [0, 1],
-                score: hasTeamSidesChanged ? [score2, score1] : [score1, score2]
+                teamSides: (hasTeamSidesChanged ? [1, 0] : [0, 1]) as [number, number],
+                score: (hasTeamSidesChanged ? [score2, score1] : [score1, score2]) as [number, number],
             }
-        })
+        }
+        this.rounds.push(newRound)
     }
 
     private getTeamMoneySpend(): [number, number] {
-        return Object.values(this.players).reduce((acc, player) => {
+        const currentRoundSpend = Object.values(this.players).reduce((acc, player) => {
             (player.teamName == this.teamNames[0]) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
             return acc;
         }, [0, 0]);
+        const prevRoundSpend = this.rounds.length > 1 ? this.rounds[this.rounds.length - 1].status.moneySpend : [0, 0];
+        return [currentRoundSpend[0] - prevRoundSpend[0], currentRoundSpend[1] - prevRoundSpend[1]];
     }
     
     private getTimeDiff(startTime: string[], endTime: string[]): number {
