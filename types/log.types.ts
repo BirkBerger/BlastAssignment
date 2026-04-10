@@ -4,15 +4,15 @@ export interface Round {
         score: [number, number],
         teamSides: [number, number]
     }
-}
+};
 
 export interface WeaponUse {
     [ weaponName: string ]: number
-}
+};
 
 export interface HitGroupDamage {
     [ hitGroup: string ]: number
-}
+};
 
 export interface Player {
     name: string,
@@ -24,10 +24,12 @@ export interface Player {
     WeaponUse: WeaponUse,
     moneySpend: number,
     hitGroupDamage: HitGroupDamage
-}
+};
+
+export type TeamNames = [string, string];
 
 export interface ParsedLog {
-    teamNames: [string, string]
+    teamNames: TeamNames
     rounds: Round[],
     players: { [id: string ]: Player }
-}
+};
