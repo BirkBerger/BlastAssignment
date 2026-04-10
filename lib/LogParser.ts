@@ -9,6 +9,7 @@ const enum MATCH_PROPERTY {
     assist = 'assist',
     kill = 'kill',
     blindness = 'blindness',
+    purchase = 'purchase'
 }
 
 type Matches = { [property in MATCH_PROPERTY]: RegExpMatchArray | null };
@@ -22,6 +23,7 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
     kill:           /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>" \[[^\]]+\] with "(?<weapon>[^"]+)"/,
     assist:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" (?:flash-)?assisted killing "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>"/,
     blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
+    purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/
 }
 
 export class LogParser {
@@ -37,7 +39,8 @@ export class LogParser {
         roundScore: null,
         kill: null,
         assist: null,
-        blindness: null
+        blindness: null,
+        purchase: null
     }
 
     constructor(raw: string) {
@@ -50,7 +53,6 @@ export class LogParser {
             if (this.matches.roundScore) {
                 const roundsPlayed = parseInt(this.matches.roundScore[3]);
                 
-                // Extract the team names from the first round, recording the intial team sides
                 if (roundsPlayed == 0) this.setTeamNames();
                 if (roundsPlayed >= 0) {
                     this.updatePlayers();
@@ -82,6 +84,8 @@ export class LogParser {
             this.matches.assist = line.match(REGEXES.assist);
         } else if (line.includes("blinded")) {
             this.matches.blindness = line.match(REGEXES.blindness);
+        } else if (line.includes("money")) {
+            this.matches.purchase = line.match(REGEXES.purchase)
         }
     }
     
@@ -104,6 +108,10 @@ export class LogParser {
             const matchResult = this.createPlayer(this.matches.blindness);
             if (matchResult) this.players[matchResult.id].blindness += parseFloat(matchResult.duration);
             this.matches.blindness = null;
+        } else if (this.matches.purchase) {
+            const matchResult = this.createPlayer(this.matches.purchase);
+            if (matchResult) this.players[matchResult.id].moneySpend += parseInt(matchResult.moneySpend);
+            this.matches.purchase = null;
         }
     }
     
@@ -120,6 +128,7 @@ export class LogParser {
                 assists: 0,
                 blindness: 0,
                 weaponUse: {},
+                moneySpend: 0,
                 hitGroupDamage: {}
             }
         }
@@ -135,18 +144,26 @@ export class LogParser {
         const score2 = parseInt(this.matches.roundScore[2]);
         const hasTeamSidesChanged = this.matches.ctTeam && this.matches.ctTeam[1] == this.teamNames[1];
         this.rounds.push ({
-            duration: this.timeDiff(startTime, endTime),
+            duration: this.getTimeDiff(startTime, endTime),
             status: {
+                moneySpend: this.getTeamMoneySpend(),
                 teamSides: hasTeamSidesChanged ? [1, 0] : [0, 1],
                 score: hasTeamSidesChanged ? [score2, score1] : [score1, score2]
             }
         })
     }
+
+    private getTeamMoneySpend(): [number, number] {
+        return Object.values(this.players).reduce((acc, player) => {
+            (player.teamName == this.teamNames[0]) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
+            return acc;
+        }, [0, 0]);
+    }
     
-    private timeDiff(startTime: string[], endTime: string[]): number {
+    private getTimeDiff(startTime: string[], endTime: string[]): number {
         const startSecs = parseInt(startTime[0]) * 3600 + parseInt(startTime[1]) * 60 + parseInt(startTime[2]);
         const endSecs = parseInt(endTime[0]) * 3600 + parseInt(endTime[1]) * 60 + parseInt(endTime[2]);
         return endSecs - startSecs;
     }
-    
+
 }

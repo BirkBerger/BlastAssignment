@@ -18,12 +18,23 @@ async function Home() {
                     <h1>
                         Hello world
                     </h1>
-                    <GameGraph rounds={data.rounds} teamNames={data.teamNames}></GameGraph>
-                    { data && Object.values(data.players).map((player, idx) => (
-                        <div key={`player_${idx}`}>
-                            { JSON.stringify(player) }
+                    <GameGraph data={data}></GameGraph>
+                    { data && data.rounds.map((round, idx) => (
+                        <div key={`rounds_${idx}`}>
+                            [{ round.status.moneySpend[0] }, { round.status.moneySpend[1] }]<br></br>
                         </div>
                     ))}
+                    {/* { data && (
+                        <div>
+                            TEAMS { data.teamNames }
+                            NO PLAYERS { Object.keys(data.players).length }
+                        </div>
+                    ) }
+                    { data && Object.values(data.players).map((player,idx) => (
+                        <div key={`player_${idx}`}>
+                            { JSON.stringify(player) }<br></br>
+                        </div>
+                    ))} */}
                 </div>
             </main>
         </div>

@@ -3,6 +3,7 @@ export interface Round {
     status: {
         score: [number, number],
         teamSides: [number, number]
+        moneySpend: [number, number]
     }
 };
 
