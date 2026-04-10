@@ -29,7 +29,7 @@ class Chart {
     }
 }
 
-function GameGraph( { data }: Props) {
+function GameChart( { data }: Props) {
 
     const [gridGraph, setGridGraph] = useState<Chart>();
     const [scoreGraphs, setScoreGraphs] = useState<Chart[]>([]);
@@ -252,4 +252,4 @@ function GameGraph( { data }: Props) {
     )
 }
 
-export default GameGraph;
+export default GameChart;

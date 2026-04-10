@@ -1,4 +1,4 @@
-import GameGraph from './components/GameGraph';
+import GameChart from './components/GameChart';
 import { LogParser } from '@/lib/LogParser';
 
 async function Home() {
@@ -18,7 +18,7 @@ async function Home() {
                     <h1>
                         Hello world
                     </h1>
-                    <GameGraph data={data}></GameGraph>
+                    <GameChart data={data}></GameChart>
                     {/* { data && data.rounds.map((round, idx) => (
                         <div key={`rounds_${idx}`}>
                             [{ round.status.moneySpend[0] }, { round.status.moneySpend[1] }]<br></br>
