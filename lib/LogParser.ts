@@ -1,4 +1,4 @@
-import { ParsedLog, Player, Players, Round, TeamNames } from "@/types/log.types";
+import { GameData, Player, Players, Round, TeamNames } from "@/types/log.types";
 
 const enum MATCH_PROPERTY {
     ctTeam = 'ctTeam',
@@ -61,7 +61,7 @@ export class LogParser {
         }
     }
 
-    public getData(): ParsedLog {
+    public getData(): GameData {
         return {
             teamNames: this.teamNames,
             rounds: this.rounds,
@@ -111,8 +111,17 @@ export class LogParser {
         const matchResult = match?.groups;
         if (!matchResult) return null;
         if (!this.players[matchResult.id]) {
-            const teamName = this.matches.ctTeam?.[1] == matchResult.side ? this.teamNames[0] : this.teamNames[1];
-            this.players[matchResult.id] = new Player(matchResult.name, teamName);
+            const teamName = (matchResult.side == "CT" ? this.matches.ctTeam?.[1] : this.matches.terroristTeam?.[1]) || "";
+            this.players[matchResult.id] = {
+                name: matchResult.name,
+                teamName,
+                kills: 0,
+                deaths: 0,
+                assists: 0,
+                blindness: 0,
+                weaponUse: {},
+                hitGroupDamage: {}
+            }
         }
         return matchResult;
     }

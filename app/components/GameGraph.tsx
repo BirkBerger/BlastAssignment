@@ -1,12 +1,11 @@
 'use client'
 
-import { Round } from "@/types/log.types";
+import { GameData } from "@/types/log.types";
 import React, { useEffect, useState } from "react";
 import { SIDE_COLORS, TEAM_COLORS } from "../constants/colors";
 
 interface Props {
-    rounds: Round[];
-    teamNames: [string, string];
+    data: GameData;
 }
 
 interface Point {
@@ -25,7 +24,7 @@ class Graph {
     }
 }
 
-function GameGraph( { rounds, teamNames }: Props) {
+function GameGraph( { data }: Props) {
 
     const [graphs, setGraphs] = useState<Graph[]>([]);
     const winScore = 16;
@@ -44,12 +43,12 @@ function GameGraph( { rounds, teamNames }: Props) {
             new Graph(TEAM_COLORS[i], { x: 0, y: planeHeight, color: SIDE_COLORS.CT })
         );
 
-        const totalDuration = rounds.reduce((acc, round) => acc + round.duration, 0);
+        const totalDuration = data.rounds.reduce((acc, round) => acc + round.duration, 0);
         const oneX = planeWidth / totalDuration;
         const oneY = planeHeight / winScore; 
         let x = 0;
 
-        rounds.forEach((round, i) => {
+        data.rounds.forEach((round, i) => {
             x += (oneX * round.duration) - 1;
             scoreGraphs.forEach((graph, j) => {
                 graph.points.push({
@@ -142,11 +141,11 @@ function GameGraph( { rounds, teamNames }: Props) {
                                                     fill={graph.color}
                                                     fontSize="clamp(10px, 2.5vw, 25px)"
                                                     dominantBaseline="middle">
-                                                    {teamNames[i]}
+                                                    {data.teamNames[i]}
                                                 </text>
                                                 <text
                                                     x={point.x + 15}
-                                                    y={point.y - 16}
+                                                    y={point.y - 18}
                                                     fill="#96dafe"
                                                     fontSize="clamp(8px, 1.5vw, 20px)">
                                                     {point.y == 0 ? "Game winner" : "Game loser"}
