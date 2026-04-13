@@ -16,6 +16,7 @@ export interface HitGroupDamage {
 };
 
 export interface Player {
+    id: string;
     name: string;
     teamName: string;
     kills: number;
@@ -27,12 +28,10 @@ export interface Player {
     hitGroupDamage: HitGroupDamage;
 };
 
-export type Players = { [id: string ]: Player };
-
 export type TeamNames = [string, string];
 
 export interface GameData {
     teamNames: TeamNames
     rounds: Round[],
-    players: Players
+    players: Player[]
 };

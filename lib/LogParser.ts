@@ -1,4 +1,4 @@
-import { GameData, Player, Players, Round, TeamNames } from "@/types/log.types";
+import { GameData, Player, Round, TeamNames } from "@/types/log.types";
 
 const enum MATCH_PROPERTY {
     ctTeam = 'ctTeam',
@@ -30,7 +30,7 @@ export class LogParser {
 
     private teamNames: TeamNames = ["", ""];
     private rounds: Round[] = [];
-    private players: Players = {};
+    private playerMap: { [id: string ]: Player } = {};
     private matches: Matches = {
         ctTeam: null,
         terroristTeam: null,
@@ -67,7 +67,7 @@ export class LogParser {
         return {
             teamNames: this.teamNames,
             rounds: this.rounds,
-            players: this.players
+            players: Object.values(this.playerMap)
         }
     }
 
@@ -103,9 +103,9 @@ export class LogParser {
                 const victimTeam = this.getTeamName(matchGroup.victimSide)
                 if (killerTeam && victimTeam) {
                     this.createPlayer(matchGroup.id, matchGroup.name, killerTeam);
-                    this.players[matchGroup.id].kills += 1;
+                    this.playerMap[matchGroup.id].kills += 1;
                     this.createPlayer(matchGroup.victimId, matchGroup.victimName, victimTeam);
-                    this.players[matchGroup.victimId].deaths += 1;
+                    this.playerMap[matchGroup.victimId].deaths += 1;
                 }
             }
             this.matches.kill = null;
@@ -115,7 +115,7 @@ export class LogParser {
                 const team = this.getTeamName(matchGroup.side);
                 if (team) {
                     this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.players[matchGroup.id].assists += 1;
+                    this.playerMap[matchGroup.id].assists += 1;
                 }
             }
             this.matches.assist = null;
@@ -125,7 +125,7 @@ export class LogParser {
                 const team = this.getTeamName(matchGroup.side);
                 if (team) {
                     this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.players[matchGroup.id].blindness += parseFloat(matchGroup.duration);
+                    this.playerMap[matchGroup.id].blindness += parseFloat(matchGroup.duration);
                 }
             }
             this.matches.blindness = null;
@@ -135,7 +135,7 @@ export class LogParser {
                 const team = this.getTeamName(matchGroup.side);
                 if (team) {
                     this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.players[matchGroup.id].moneySpend += parseInt(matchGroup.moneySpend);
+                    this.playerMap[matchGroup.id].moneySpend += parseInt(matchGroup.moneySpend);
                 }
             }
             this.matches.purchase = null;
@@ -148,9 +148,10 @@ export class LogParser {
     }
     
     private createPlayer(id: string, name: string, teamName: string) {
-        if (this.players[id]) return;
+        if (this.playerMap[id]) return;
 
-        this.players[id] = {
+        this.playerMap[id] = {
+            id,
             name,
             teamName,
             kills: 0,
@@ -183,7 +184,7 @@ export class LogParser {
     }
 
     private getTeamMoneySpend(): [number, number] {
-        const currentRoundSpend = Object.values(this.players).reduce((acc, player) => {
+        const currentRoundSpend = Object.values(this.playerMap).reduce((acc, player) => {
             (player.teamName == this.teamNames[0]) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
             return acc;
         }, [0, 0]);
