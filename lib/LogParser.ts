@@ -20,9 +20,9 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
     roundScore:     /MatchStatus: Score: (\d+):(\d+) on map "[^"]+" RoundsPlayed: (\d+)/,
     ctTeam:         /MatchStatus: Team playing "CT": (.+)/,
     terroristTeam:  /MatchStatus: Team playing "TERRORIST": (.+)/,
-    kill:           /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>" \[[^\]]+\] with "(?<weapon>[^"]+)"/,
+    kill:           /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><(?<victimSide>[^>]*)>" \[[^\]]+\] with "(?<weapon>[^"]+)"/,
     assist:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" (?:flash-)?assisted killing "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>"/,
-    blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
+    blindness:      /"(?<name>[^<]+)<\d+><(?<id>STEAM[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
     purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/
 }
 
@@ -97,42 +97,70 @@ export class LogParser {
     
     private updatePlayers() {
         if (this.matches.kill) {
-            const matchResult = this.createPlayer(this.matches.kill);
-            if (matchResult) this.players[matchResult.id].kills += 1;
+            const matchGroup = this.matches.kill?.groups;
+            if (matchGroup) {
+                const killerTeam = this.getTeamName(matchGroup.side);
+                const victimTeam = this.getTeamName(matchGroup.victimSide)
+                if (killerTeam && victimTeam) {
+                    this.createPlayer(matchGroup.id, matchGroup.name, killerTeam);
+                    this.players[matchGroup.id].kills += 1;
+                    this.createPlayer(matchGroup.victimId, matchGroup.victimName, victimTeam);
+                    this.players[matchGroup.victimId].deaths += 1;
+                }
+            }
             this.matches.kill = null;
         } else if (this.matches.assist) {
-            const matchResult = this.createPlayer(this.matches.assist);
-            if (matchResult) this.players[matchResult.id].assists += 1;
+            const matchGroup = this.matches.assist?.groups;
+            if (matchGroup) {
+                const team = this.getTeamName(matchGroup.side);
+                if (team) {
+                    this.createPlayer(matchGroup.id, matchGroup.name, team);
+                    this.players[matchGroup.id].assists += 1;
+                }
+            }
             this.matches.assist = null;
         } else if (this.matches.blindness) {
-            const matchResult = this.createPlayer(this.matches.blindness);
-            if (matchResult) this.players[matchResult.id].blindness += parseFloat(matchResult.duration);
+            const matchGroup = this.matches.blindness?.groups;
+            if (matchGroup) {
+                const team = this.getTeamName(matchGroup.side);
+                if (team) {
+                    this.createPlayer(matchGroup.id, matchGroup.name, team);
+                    this.players[matchGroup.id].blindness += parseFloat(matchGroup.duration);
+                }
+            }
             this.matches.blindness = null;
         } else if (this.matches.purchase) {
-            const matchResult = this.createPlayer(this.matches.purchase);
-            if (matchResult) this.players[matchResult.id].moneySpend += parseInt(matchResult.moneySpend);
+            const matchGroup = this.matches.purchase?.groups;
+            if (matchGroup) {
+                const team = this.getTeamName(matchGroup.side);
+                if (team) {
+                    this.createPlayer(matchGroup.id, matchGroup.name, team);
+                    this.players[matchGroup.id].moneySpend += parseInt(matchGroup.moneySpend);
+                }
+            }
             this.matches.purchase = null;
         }
     }
+
+    private getTeamName(side: string): string | undefined {
+        // Filter out any players not on team CT and TERRORIST (e.g. Spectators)
+        return side == "CT" ? this.matches.ctTeam?.[1] : side == "TERRORIST" ? this.matches.terroristTeam?.[1] : undefined;
+    }
     
-    private createPlayer(match: RegExpMatchArray): { [key: string]: string } | null {
-        const matchResult = match?.groups;
-        if (!matchResult) return null;
-        if (!this.players[matchResult.id]) {
-            const teamName = (matchResult.side == "CT" ? this.matches.ctTeam?.[1] : this.matches.terroristTeam?.[1]) || "";
-            this.players[matchResult.id] = {
-                name: matchResult.name,
-                teamName,
-                kills: 0,
-                deaths: 0,
-                assists: 0,
-                blindness: 0,
-                weaponUse: {},
-                moneySpend: 0,
-                hitGroupDamage: {}
-            }
+    private createPlayer(id: string, name: string, teamName: string) {
+        if (this.players[id]) return;
+
+        this.players[id] = {
+            name,
+            teamName,
+            kills: 0,
+            deaths: 0,
+            assists: 0,
+            blindness: 0,
+            weaponUse: {},
+            moneySpend: 0,
+            hitGroupDamage: {}
         }
-        return matchResult;
     }
     
     private updateRounds() {

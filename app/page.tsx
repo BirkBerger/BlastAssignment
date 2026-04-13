@@ -1,5 +1,6 @@
 import GameChart from './components/GameChart';
 import { LogParser } from '@/lib/LogParser';
+import ScoreBoard from './components/ScoreBoard';
 
 async function Home() {
 
@@ -19,22 +20,7 @@ async function Home() {
                         Hello world
                     </h1>
                     <GameChart data={data}></GameChart>
-                    {/* { data && data.rounds.map((round, idx) => (
-                        <div key={`rounds_${idx}`}>
-                            [{ round.status.moneySpend[0] }, { round.status.moneySpend[1] }]<br></br>
-                        </div>
-                    ))} */}
-                    {/* { data && (
-                        <div>
-                            TEAMS { data.teamNames }
-                            NO PLAYERS { Object.keys(data.players).length }
-                        </div>
-                    ) }
-                    { data && Object.values(data.players).map((player,idx) => (
-                        <div key={`player_${idx}`}>
-                            { JSON.stringify(player) }<br></br>
-                        </div>
-                    ))} */}
+                    <ScoreBoard data={data}></ScoreBoard>
                 </div>
             </main>
         </div>
