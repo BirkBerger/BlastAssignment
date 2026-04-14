@@ -1,7 +1,7 @@
 'use client'
 
 import { GameData, Player } from "@/types/log.types";
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { TEAM_COLORS } from "../constants/colors";
 import ArrowButton from "./ArrowButton";
@@ -26,13 +26,13 @@ function ScoreBoard({ data }: Props) {
         return acc;
     }, [[], []]);
 
-    const [activePlayer, setActivePlayer] = useState<Player>(teams[0][0]);
-    const [hoveredPlayer, setHoveredPlayer] = useState<Player | null>(null);
-    const playerBgClasses = (playerId: string) => `py-1 px-2 cursor-pointer transition-bg duration-100 ${playerId == hoveredPlayer?.id ? 'bg-[#3838b2]' : ""} ${playerId == activePlayer.id ? 'bg-[#3c3c3c]' : ""}`
-
     teams.forEach((team) => {
         team.sort((p1, p2) => (p2[sortBy.field] - p1[sortBy.field]) * sortBy.dir);
     });
+
+    const [activePlayer, setActivePlayer] = useState<Player | null>(null);
+    const [hoveredPlayer, setHoveredPlayer] = useState<Player | null>(null);
+    const playerBgClasses = (playerId: string) => `py-1 px-2 cursor-pointer ${playerId == hoveredPlayer?.id ? 'bg-[#3838b2]' : ""} ${playerId == activePlayer?.id ? 'bg-[#3c3c3c]' : ""}`
 
     const handleSort = (field: Field) => {
         setSortBy((prev) => ({
@@ -40,6 +40,10 @@ function ScoreBoard({ data }: Props) {
             dir: prev.field == field && prev.dir == 1 ? -1 : 1
         }))
     };
+
+    useEffect(() => {
+        setActivePlayer(teams[0][0]);
+    }, []);
 
     return (
         <div>
@@ -76,7 +80,7 @@ function ScoreBoard({ data }: Props) {
                     </React.Fragment>
                 )) }
             </div>
-            <PlayerCard player={activePlayer}></PlayerCard>
+            <PlayerCard player={activePlayer} cardColor={TEAM_COLORS[activePlayer?.teamIndex || 0]} teamName={data.teamNames[activePlayer?.teamIndex || 0]}></PlayerCard>
         </div>
     )
 }
