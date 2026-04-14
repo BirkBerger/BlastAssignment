@@ -18,7 +18,7 @@ export interface HitGroupDamage {
 export interface Player {
     id: string;
     name: string;
-    teamName: string;
+    teamIndex: number;  // Position in GameData.teamNames
     kills: number;
     deaths: number;
     assists: number;

@@ -1,4 +1,5 @@
 import { GameData, Player, Round, TeamNames } from "@/types/log.types";
+import SteamID from 'steamid';
 
 const enum MATCH_PROPERTY {
     ctTeam = 'ctTeam',
@@ -99,61 +100,47 @@ export class LogParser {
         if (this.matches.kill) {
             const matchGroup = this.matches.kill?.groups;
             if (matchGroup) {
-                const killerTeam = this.getTeamName(matchGroup.side);
-                const victimTeam = this.getTeamName(matchGroup.victimSide)
-                if (killerTeam && victimTeam) {
-                    this.createPlayer(matchGroup.id, matchGroup.name, killerTeam);
-                    this.playerMap[matchGroup.id].kills += 1;
-                    this.createPlayer(matchGroup.victimId, matchGroup.victimName, victimTeam);
-                    this.playerMap[matchGroup.victimId].deaths += 1;
-                }
+                const killer = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (killer) killer.kills += 1;
+                const victim = this.getPlayer(matchGroup.victimId, matchGroup.victimName, matchGroup.victimSide);
+                if (victim) victim.deaths += 1;
             }
             this.matches.kill = null;
         } else if (this.matches.assist) {
             const matchGroup = this.matches.assist?.groups;
             if (matchGroup) {
-                const team = this.getTeamName(matchGroup.side);
-                if (team) {
-                    this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.playerMap[matchGroup.id].assists += 1;
-                }
+                const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (player) player.assists += 1;
             }
             this.matches.assist = null;
         } else if (this.matches.blindness) {
             const matchGroup = this.matches.blindness?.groups;
             if (matchGroup) {
-                const team = this.getTeamName(matchGroup.side);
-                if (team) {
-                    this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.playerMap[matchGroup.id].blindness += parseFloat(matchGroup.duration);
-                }
+                const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (player) player.blindness += parseFloat(matchGroup.duration);
             }
             this.matches.blindness = null;
         } else if (this.matches.purchase) {
             const matchGroup = this.matches.purchase?.groups;
             if (matchGroup) {
-                const team = this.getTeamName(matchGroup.side);
-                if (team) {
-                    this.createPlayer(matchGroup.id, matchGroup.name, team);
-                    this.playerMap[matchGroup.id].moneySpend += parseInt(matchGroup.moneySpend);
-                }
+                const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (player) player.moneySpend += parseInt(matchGroup.moneySpend);
             }
             this.matches.purchase = null;
         }
     }
 
-    private getTeamName(side: string): string | undefined {
-        // Filter out any players not on team CT and TERRORIST (e.g. Spectators)
-        return side == "CT" ? this.matches.ctTeam?.[1] : side == "TERRORIST" ? this.matches.terroristTeam?.[1] : undefined;
-    }
-    
-    private createPlayer(id: string, name: string, teamName: string) {
-        if (this.playerMap[id]) return;
+    private getPlayer(id: string, name: string, side: string): Player | null {
+        if (this.playerMap[id]) return this.playerMap[id];
 
-        this.playerMap[id] = {
-            id,
+        // Filter out any players not on team CT and TERRORIST (e.g. Spectators)
+        const teamName = side == "CT" ? this.matches.ctTeam?.[1] : side == "TERRORIST" ? this.matches.terroristTeam?.[1] : null;
+        if (!teamName) return null;
+
+        return this.playerMap[id] = {
+            id: this.getFullSteamId(id),
             name,
-            teamName,
+            teamIndex: this.teamNames.indexOf(teamName),
             kills: 0,
             deaths: 0,
             assists: 0,
@@ -163,6 +150,11 @@ export class LogParser {
             hitGroupDamage: {}
         }
     }
+
+    private getFullSteamId(id: string): string {
+        const sid = new SteamID(id);
+        return sid.getSteamID64();
+    } 
     
     private updateRounds() {
         if (!this.matches.roundEnd || !this.matches.roundStart || !this.matches.roundScore || !this.teamNames) return;
@@ -185,7 +177,7 @@ export class LogParser {
 
     private getTeamMoneySpend(): [number, number] {
         const currentRoundSpend = Object.values(this.playerMap).reduce((acc, player) => {
-            (player.teamName == this.teamNames[0]) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
+            (player.teamIndex == 0) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
             return acc;
         }, [0, 0]);
         const prevRoundSpend = this.rounds.length > 1 ? this.rounds[this.rounds.length - 1].status.moneySpend : [0, 0];

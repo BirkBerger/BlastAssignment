@@ -22,7 +22,7 @@ function ScoreBoard({ data }: Props) {
     const [sortBy, setSortBy] = useState<{ field: Field, dir: 1 | -1 }>({ field: Field.kills, dir: 1 });
 
     const teams: [Player[], Player[]] = data.players.reduce((acc: [Player[], Player[]], player) => {
-        player.teamName == data.teamNames[0] ? acc[0].push(player) : acc[1].push(player);
+        player.teamIndex == 0 ? acc[0].push(player) : acc[1].push(player);
         return acc;
     }, [[], []]);
 
