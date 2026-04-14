@@ -49,6 +49,7 @@ export class LogParser {
 
     constructor(raw: string) {
         const lines = raw.split('\n');
+        let prevRoundsPlayed = -1;
         
         for (const line of lines) {
 
@@ -56,13 +57,20 @@ export class LogParser {
             
             if (this.matches.roundScore) {
                 const roundsPlayed = parseInt(this.matches.roundScore[3]);
+
+                if (roundsPlayed === 0) this.setTeamNames();
+
+                if (roundsPlayed === 0 && prevRoundsPlayed >= 0) {
+                    this.rounds = [];
+                    this.playerMap = {};
+                }
                 
-                if (roundsPlayed == 0) this.setTeamNames();
                 if (roundsPlayed >= 0) {
                     this.updatePlayers();
                     this.matches.roundEnd = line.match(REGEXES.roundEnd);
                     this.updateRounds();
                 }
+                prevRoundsPlayed = roundsPlayed;
             }
         }
     }
