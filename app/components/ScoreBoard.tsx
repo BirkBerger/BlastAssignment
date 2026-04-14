@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter, useSearchParams } from "next/navigation";
 import { GameData, Player } from "@/types/log.types";
 import React, { useEffect } from "react";
 import { useState } from "react";
@@ -19,7 +20,11 @@ enum Field {
 
 function ScoreBoard({ data }: Props) {
 
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [sortBy, setSortBy] = useState<{ field: Field, dir: 1 | -1 }>({ field: Field.kills, dir: 1 });
+    const [activePlayer, setActivePlayer] = useState<Player | null>(null);
+    const [hoveredPlayer, setHoveredPlayer] = useState<Player | null>(null);
 
     const teams: [Player[], Player[]] = data.players.reduce((acc: [Player[], Player[]], player) => {
         player.teamIndex == 0 ? acc[0].push(player) : acc[1].push(player);
@@ -30,8 +35,6 @@ function ScoreBoard({ data }: Props) {
         team.sort((p1, p2) => (p2[sortBy.field] - p1[sortBy.field]) * sortBy.dir);
     });
 
-    const [activePlayer, setActivePlayer] = useState<Player | null>(null);
-    const [hoveredPlayer, setHoveredPlayer] = useState<Player | null>(null);
     const playerBgClasses = (playerId: string) => `py-1 px-2 cursor-pointer ${playerId == hoveredPlayer?.id ? 'bg-[#3838b2]' : ""} ${playerId == activePlayer?.id ? 'bg-[#3c3c3c]' : ""}`
 
     const handleSort = (field: Field) => {
@@ -42,8 +45,15 @@ function ScoreBoard({ data }: Props) {
     };
 
     useEffect(() => {
-        setActivePlayer(teams[0][0]);
-    }, []);
+        const queryParamId = searchParams.get('player');
+        const initialActivePlayer = data.players.find((player) => player.id == queryParamId) || teams[0][0];
+        setActivePlayer(initialActivePlayer);
+    }, [searchParams]);
+
+    const handlePlayerClick = (player: Player) => {
+        setActivePlayer(player);
+        router.replace(`?player=${player.id}`, { scroll: false })
+    }
 
     return (
         <div>
@@ -62,7 +72,7 @@ function ScoreBoard({ data }: Props) {
                             {data.teamNames[i]}
                         </h2>
                         { team.map((player, j) => (
-                            <div key={`player_${j}`} className="contents" onClick={() => setActivePlayer(player)} onMouseEnter={() => setHoveredPlayer(player)} onMouseLeave={() => setHoveredPlayer(null)}>
+                            <div key={`player_${j}`} className="contents" onClick={() => handlePlayerClick(player)} onMouseEnter={() => setHoveredPlayer(player)} onMouseLeave={() => setHoveredPlayer(null)}>
                                 <div className={`text-left ${playerBgClasses(player.id)}`}>
                                     {player.name}
                                 </div>
