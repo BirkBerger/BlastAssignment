@@ -147,10 +147,11 @@ export class LogParser {
                 if (attacker) {
                     const currentHitgroupShots = attacker.hitgroupShots[matchGroup.hitGroup] || 0;
                     attacker.hitgroupShots[matchGroup.hitGroup] = currentHitgroupShots + 1
-                    const currentWeaponShots = attacker.weaponShots[matchGroup.weapon]
+                    const currentWeaponShots = attacker.weaponShots[matchGroup.weapon] || 0;
                     attacker.weaponShots[matchGroup.weapon] = currentWeaponShots + 1;
                 }
             }
+            this.matches.attack = null;
         }
     }
 
