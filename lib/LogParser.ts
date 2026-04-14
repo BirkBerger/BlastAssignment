@@ -10,7 +10,8 @@ const enum MATCH_PROPERTY {
     assist = 'assist',
     kill = 'kill',
     blindness = 'blindness',
-    purchase = 'purchase'
+    purchase = 'purchase',
+    attack = 'attack'
 }
 
 type Matches = { [property in MATCH_PROPERTY]: RegExpMatchArray | null };
@@ -23,8 +24,9 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
     terroristTeam:  /MatchStatus: Team playing "TERRORIST": (.+)/,
     kill:           /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><(?<victimSide>[^>]*)>" \[[^\]]+\] with "(?<weapon>[^"]+)"/,
     assist:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" (?:flash-)?assisted killing "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>"/,
-    blindness:      /"(?<name>[^<]+)<\d+><(?<id>STEAM[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
-    purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/
+    blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
+    purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/,
+    attack:         /^.+"(?<name>.+)<\d+><(?<id>[^>]+)><[^>]+>" \[[^\]]+\] attacked "(?<victimName>.+)<\d+><(?<victimId>[^>]+)><[^>]+>" \[[^\]]+\] with "(?<weapon>[^"]+)" \(damage "(?<damage>\d+)"\).*\(hitgroup "(?<hitGroup>[^"]+)"\)/
 }
 
 export class LogParser {
@@ -41,7 +43,8 @@ export class LogParser {
         kill: null,
         assist: null,
         blindness: null,
-        purchase: null
+        purchase: null,
+        attack: null
     }
 
     constructor(raw: string) {
@@ -87,6 +90,8 @@ export class LogParser {
             this.matches.blindness = line.match(REGEXES.blindness);
         } else if (line.includes("money")) {
             this.matches.purchase = line.match(REGEXES.purchase)
+        } else if (line.includes("attacked")) {
+            this.matches.attack = line.match(REGEXES.attack);
         }
     }
     
@@ -127,6 +132,17 @@ export class LogParser {
                 if (player) player.moneySpend += parseInt(matchGroup.moneySpend);
             }
             this.matches.purchase = null;
+        } else if (this.matches.attack) {
+            const matchGroup = this.matches.attack?.groups;
+            if (matchGroup) {
+                const attacker = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (attacker) {
+                    const currentHitgroupShots = attacker.hitgroupShots[matchGroup.hitGroup] || 0;
+                    attacker.hitgroupShots[matchGroup.hitGroup] = currentHitgroupShots + 1
+                    const currentWeaponShots = attacker.weaponShots[matchGroup.weapon]
+                    attacker.weaponShots[matchGroup.weapon] = currentWeaponShots + 1;
+                }
+            }
         }
     }
 
@@ -145,9 +161,9 @@ export class LogParser {
             deaths: 0,
             assists: 0,
             blindness: 0,
-            weaponUse: {},
+            weaponShots: {},
             moneySpend: 0,
-            hitGroupDamage: {}
+            hitgroupShots: {}
         }
     }
 

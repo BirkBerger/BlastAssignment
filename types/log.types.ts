@@ -7,11 +7,11 @@ export interface Round {
     }
 };
 
-export interface WeaponUse {
+export interface WeaponShots {
     [ weaponName: string ]: number
 };
 
-export interface HitGroupDamage {
+export interface HitgroupShots {
     [ hitGroup: string ]: number
 };
 
@@ -23,9 +23,9 @@ export interface Player {
     deaths: number;
     assists: number;
     blindness: number;
-    weaponUse: WeaponUse;
+    weaponShots: WeaponShots;
     moneySpend: number;
-    hitGroupDamage: HitGroupDamage;
+    hitgroupShots: HitgroupShots;
 };
 
 export type TeamNames = [string, string];
