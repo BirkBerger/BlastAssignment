@@ -99,7 +99,12 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
                         </img>
                     </div>
                     <div className={`border border-inherit`}>
-                        [Z]
+                        <h2 className={FONT_SIZE.lg}>
+                            Blinded for
+                        </h2>
+                        <div>
+                            {(player.blindness).toFixed(2)} seconds
+                        </div>
                     </div>
                     <div className={`col-span-2 ${cellClasses}`}>
                         [W]
