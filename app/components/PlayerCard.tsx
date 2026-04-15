@@ -17,11 +17,17 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
 
     const [steamInfo, setSteamInfo] = useState<SteamInfo | null>();
 
+    const mostUsedWeapon = Object.entries(player?.weaponShots || {}).reduce((acc, [weapon, shots]) => {
+        return acc.shots > shots ? acc : { weapon, shots };
+    }, { weapon: "", shots: 0 });
+
     useEffect(() => {
         setSteamInfo(null);
         if (!player) return;
         steamService.getPlayerInfo(player.id)
         .then((steamInfo) => setSteamInfo(steamInfo));
+
+
     }, [player?.id]);
 
     const cellClasses = "border border-inherit p-2"
@@ -56,6 +62,23 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
                         </h2>
                         <div className="grow">
                             <HitgroupChart hitgroupShots={player.hitgroupShots}></HitgroupChart>
+                        </div>
+                    </div>
+                    <div className={`col-span-2 ${cellClasses} flex items-center justify-end relative`}>
+                        <img className="max-h-full" src={`/weapons/${mostUsedWeapon.weapon}.webp`}
+                            alt="The player's most used weapon."
+                            onError={(e) => e.currentTarget.src = '/fallbacks/weapon.png'}>
+                        </img>
+                        <div className="absolute left-2 bottom-2">
+                            <div>
+                                { mostUsedWeapon.weapon }
+                            </div>
+                            <h2 className={FONT_SIZE.lg}>
+                                Fave Weapon
+                            </h2>
+                            <div>
+                                Hit {mostUsedWeapon.shots} times
+                            </div>
                         </div>
                     </div>
                     <div className={`border border-inherit`}>
