@@ -144,10 +144,13 @@ export class LogParser {
             if (matchGroup) {
                 const attacker = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
                 if (attacker) {
+                    const weapon = matchGroup.weapon;
+                    if (weapon != "inferno") {
                     const currentHitgroupShots = attacker.hitgroupShots[matchGroup.hitGroup] || 0;
                     attacker.hitgroupShots[matchGroup.hitGroup] = currentHitgroupShots + 1
-                    const currentWeaponShots = attacker.weaponShots[matchGroup.weapon] || 0;
-                    attacker.weaponShots[matchGroup.weapon] = currentWeaponShots + 1;
+                        const currentWeaponShots = attacker.weaponShots[weapon] || 0;
+                        attacker.weaponShots[matchGroup.weapon] = currentWeaponShots + 1;
+                    }
                 }
             }
             this.matches.attack = null;
