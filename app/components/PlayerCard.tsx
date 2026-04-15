@@ -107,7 +107,12 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
                         </div>
                     </div>
                     <div className={`col-span-2 ${cellClasses}`}>
-                        [W]
+                        <h2 className={FONT_SIZE.lg}>
+                            Trashed furniture
+                        </h2>
+                        <div>
+                            {player.mapDamage}
+                        </div>
                     </div>
                 </div>
             )}

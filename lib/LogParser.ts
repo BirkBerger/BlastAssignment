@@ -12,7 +12,8 @@ enum MATCH_PROPERTY {
     blindness = 'blindness',
     purchase = 'purchase',
     attack = 'attack',
-    threw = 'threw'
+    threw = 'threw',
+    killed_other = 'killed_other'
 }
 
 type Matches = { [property in MATCH_PROPERTY]: RegExpMatchArray | null };
@@ -28,7 +29,8 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
     blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" blinded for (?<duration>[\d.]+)/,
     purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/,
     attack:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] attacked "(?<victimName>.+)<\d+><(?<victimId>[^>]+)><[^>]+>" \[[^\]]+\] with "(?<weapon>[^"]+)" \(damage "(?<damage>\d+)"\).*\(hitgroup "(?<hitGroup>[^"]+)"\)/,
-    threw:          /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]+)>" threw (?<grenade>\w+)/
+    threw:          /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]+)>" threw (?<grenade>\w+)/,
+    killed_other:   /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed other/
 }
 
 export class LogParser {
@@ -86,6 +88,7 @@ export class LogParser {
             this.matches.roundStart = line.match(REGEXES.roundStart) || this.matches.roundStart;
         } else if (line.includes("killed")) {
             this.matches.kill = line.match(REGEXES.kill);
+            this.matches.killed_other = line.match(REGEXES.killed_other);
         } else if (line.includes("assisted")) {
             this.matches.assist = line.match(REGEXES.assist);
         } else if (line.includes("blinded")) {
@@ -158,6 +161,13 @@ export class LogParser {
                 }
             }
             this.matches.threw = null;
+        } else if (this.matches.killed_other) {
+            const matchGroup = this.matches.killed_other?.groups;
+            if (matchGroup) {
+                const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (player) player.mapDamage += 1;
+            }
+            this.matches.killed_other = null;
         }
     }
 
@@ -179,7 +189,8 @@ export class LogParser {
             weaponShots: {},
             grenadesThrown: {},
             moneySpend: 0,
-            hitgroupShots: {}
+            hitgroupShots: {},
+            mapDamage: 0
         }
     }
 

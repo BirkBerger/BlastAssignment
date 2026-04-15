@@ -31,6 +31,7 @@ export interface Player {
     grenadesThrown: GrenadesThrown;
     moneySpend: number;
     hitgroupShots: HitgroupShots;
+    mapDamage: number;
 };
 
 export type TeamNames = [string, string];
