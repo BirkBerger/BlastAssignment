@@ -11,6 +11,10 @@ export interface WeaponShots {
     [ weaponName: string ]: number
 };
 
+export interface GrenadesThrown {
+    [ grenadeName: string ]: number
+}
+
 export interface HitgroupShots {
     [ hitGroup: string ]: number
 };
@@ -24,6 +28,7 @@ export interface Player {
     assists: number;
     blindness: number;
     weaponShots: WeaponShots;
+    grenadesThrown: GrenadesThrown;
     moneySpend: number;
     hitgroupShots: HitgroupShots;
 };

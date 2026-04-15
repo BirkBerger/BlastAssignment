@@ -1,7 +1,7 @@
 import { GameData, Player, Round, TeamNames } from "@/types/log.types";
 import SteamID from 'steamid';
 
-const enum MATCH_PROPERTY {
+enum MATCH_PROPERTY {
     ctTeam = 'ctTeam',
     terroristTeam = 'terroristTeam',
     roundStart = 'roundStart',
@@ -11,7 +11,8 @@ const enum MATCH_PROPERTY {
     kill = 'kill',
     blindness = 'blindness',
     purchase = 'purchase',
-    attack = 'attack'
+    attack = 'attack',
+    threw = 'threw'
 }
 
 type Matches = { [property in MATCH_PROPERTY]: RegExpMatchArray | null };
@@ -24,9 +25,10 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
     terroristTeam:  /MatchStatus: Team playing "TERRORIST": (.+)/,
     kill:           /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] killed "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><(?<victimSide>[^>]*)>" \[[^\]]+\] with "(?<weapon>[^"]+)"/,
     assist:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" (?:flash-)?assisted killing "(?<victimName>[^<]+)<\d+><(?<victimId>[^>]+)><[^>]*>"/,
-    blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><[^>]*>" blinded for (?<duration>[\d.]+)/,
+    blindness:      /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" blinded for (?<duration>[\d.]+)/,
     purchase:       /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" money change \d+-(?<moneySpend>\d+) = \$\d+/,
-    attack:         /^.+"(?<name>.+)<\d+><(?<id>[^>]+)><[^>]+>" \[[^\]]+\] attacked "(?<victimName>.+)<\d+><(?<victimId>[^>]+)><[^>]+>" \[[^\]]+\] with "(?<weapon>[^"]+)" \(damage "(?<damage>\d+)"\).*\(hitgroup "(?<hitGroup>[^"]+)"\)/
+    attack:         /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]*)>" \[[^\]]+\] attacked "(?<victimName>.+)<\d+><(?<victimId>[^>]+)><[^>]+>" \[[^\]]+\] with "(?<weapon>[^"]+)" \(damage "(?<damage>\d+)"\).*\(hitgroup "(?<hitGroup>[^"]+)"\)/,
+    threw:          /"(?<name>[^<]+)<\d+><(?<id>[^>]+)><(?<side>[^>]+)>" threw (?<grenade>\w+)/
 }
 
 export class LogParser {
@@ -34,18 +36,10 @@ export class LogParser {
     private teamNames: TeamNames = ["", ""];
     private rounds: Round[] = [];
     private playerMap: { [id: string ]: Player } = {};
-    private matches: Matches = {
-        ctTeam: null,
-        terroristTeam: null,
-        roundStart: null,
-        roundEnd: null,
-        roundScore: null,
-        kill: null,
-        assist: null,
-        blindness: null,
-        purchase: null,
-        attack: null
-    }
+    private matches: Matches = Object.values(MATCH_PROPERTY).reduce((acc, key) => {
+        acc[key] = null;
+        return acc;
+    }, {} as Matches)
 
     constructor(raw: string) {
         const lines = raw.split('\n');
@@ -100,6 +94,8 @@ export class LogParser {
             this.matches.purchase = line.match(REGEXES.purchase)
         } else if (line.includes("attacked")) {
             this.matches.attack = line.match(REGEXES.attack);
+        } else if (line.includes("threw")) {
+            this.matches.threw = line.match(REGEXES.threw);
         }
     }
     
@@ -152,6 +148,16 @@ export class LogParser {
                 }
             }
             this.matches.attack = null;
+        } else if (this.matches.threw) {
+            const matchGroup = this.matches.threw?.groups;
+            if (matchGroup) {
+                const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
+                if (player) {
+                    const currentGrenadesThrown = player.grenadesThrown[matchGroup.grenade] || 0;
+                    player.grenadesThrown[matchGroup.grenade] = currentGrenadesThrown + 1;
+                }
+            }
+            this.matches.threw = null;
         }
     }
 
@@ -171,6 +177,7 @@ export class LogParser {
             assists: 0,
             blindness: 0,
             weaponShots: {},
+            grenadesThrown: {},
             moneySpend: 0,
             hitgroupShots: {}
         }

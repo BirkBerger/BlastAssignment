@@ -21,6 +21,10 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
         return acc.shots > shots ? acc : { weapon, shots };
     }, { weapon: "", shots: 0 });
 
+    const grenadesThrownTotal = Object.values(player?.grenadesThrown || {}).reduce((acc, throws) => {
+        return acc + throws;
+    }, 0)
+
     useEffect(() => {
         setSteamInfo(null);
         if (!player) return;
@@ -81,8 +85,18 @@ const PlayerCard = React.memo(function PlayerCard({ player, cardColor, teamName 
                             </div>
                         </div>
                     </div>
-                    <div className={`border border-inherit`}>
-                        [Y]
+                    <div className={`${cellClasses} border border-inherit flex justify-end items-end relative`}>
+                        <div className="absolute top-0 left-0 p-[inherit] flex flex-col h-full justify-between">
+                            <h2 className={FONT_SIZE.lg}>
+                                Grenades thrown
+                            </h2>
+                            <div className={FONT_SIZE.xl}>
+                                #{ grenadesThrownTotal }
+                            </div>
+                        </div>
+                        <img className="max-h-[85%]" src="/weapons/grenades.webp"
+                            alt="Different grenade types.">
+                        </img>
                     </div>
                     <div className={`border border-inherit`}>
                         [Z]
