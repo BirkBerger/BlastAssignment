@@ -29,7 +29,6 @@ export interface Player {
     blindness: number;
     weaponShots: WeaponShots;
     grenadesThrown: GrenadesThrown;
-    moneySpend: number;
     hitgroupShots: HitgroupShots;
     mapDamage: number;
 };

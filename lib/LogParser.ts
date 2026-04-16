@@ -36,6 +36,7 @@ const REGEXES: { [ property in MATCH_PROPERTY ]: RegExp } = {
 export class LogParser {
 
     private teamNames: TeamNames = ["", ""];
+    private roundMoneySpend: [number, number] = [0, 0];
     private rounds: Round[] = [];
     private playerMap: { [id: string ]: Player } = {};
     private matches: Matches = Object.values(MATCH_PROPERTY).reduce((acc, key) => {
@@ -54,18 +55,22 @@ export class LogParser {
             if (this.matches.roundScore) {
                 const roundsPlayed = parseInt(this.matches.roundScore[3]);
 
+                // Override team names and sides until final match start
                 if (roundsPlayed === 0) this.setTeamNames();
 
+                // Reset on match restart
                 if (roundsPlayed === 0 && prevRoundsPlayed >= 0) {
                     this.rounds = [];
                     this.playerMap = {};
                 }
                 
+                // After final match start
                 if (roundsPlayed >= 0) {
                     this.updatePlayers();
                     this.matches.roundEnd = line.match(REGEXES.roundEnd);
                     this.updateRounds();
                 }
+
                 prevRoundsPlayed = roundsPlayed;
             }
         }
@@ -102,7 +107,6 @@ export class LogParser {
         }
     }
     
-    
     private setTeamNames() {
         if (!this.matches.ctTeam || !this.matches.terroristTeam) return;
         this.teamNames = [this.matches.ctTeam[1], this.matches.terroristTeam[1]];
@@ -136,7 +140,7 @@ export class LogParser {
             const matchGroup = this.matches.purchase?.groups;
             if (matchGroup) {
                 const player = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
-                if (player) player.moneySpend += parseInt(matchGroup.moneySpend);
+                if (player) this.roundMoneySpend[player.teamIndex] += parseInt(matchGroup.moneySpend);
             }
             this.matches.purchase = null;
         } else if (this.matches.attack) {
@@ -191,7 +195,6 @@ export class LogParser {
             blindness: 0,
             weaponShots: {},
             grenadesThrown: {},
-            moneySpend: 0,
             hitgroupShots: {},
             mapDamage: 0
         }
@@ -222,12 +225,9 @@ export class LogParser {
     }
 
     private getTeamMoneySpend(): [number, number] {
-        const currentRoundSpend = Object.values(this.playerMap).reduce((acc, player) => {
-            (player.teamIndex == 0) ? acc[0] += player.moneySpend : acc[1] += player.moneySpend;
-            return acc;
-        }, [0, 0]);
-        const prevRoundSpend = this.rounds.length > 1 ? this.rounds[this.rounds.length - 1].status.moneySpend : [0, 0];
-        return [currentRoundSpend[0] - prevRoundSpend[0], currentRoundSpend[1] - prevRoundSpend[1]];
+        const moneySpend = this.roundMoneySpend;
+        this.roundMoneySpend = [0, 0];
+        return moneySpend;
     }
     
     private getTimeDiff(startTime: string[], endTime: string[]): number {
