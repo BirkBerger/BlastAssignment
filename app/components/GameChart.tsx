@@ -100,6 +100,23 @@ function GameChart( { data }: Props) {
         <div>
             <div className="h-[500px] w-[70%] max-w-[1000px] relative my-12 ml-16 mr-auto">
                 <svg className="w-full h-full absolute overflow-visible pointer-events-none">
+                    <defs>
+                        {/* Bar animation */}
+                        <clipPath id="bar-reveal">
+                            <rect x="-100%" y="100%" width="200%" height="100%">
+                                <animate
+                                    attributeName="y"
+                                    from="100%"
+                                    to="0%"
+                                    dur="1.5s"
+                                    calcMode="spline"
+                                    keyTimes="0;1"
+                                    keySplines="0.4 0 0.2 1"
+                                    fill="freeze"
+                                />
+                            </rect>
+                        </clipPath>
+                    </defs>
                     {/* Grid lines */}
                     { gridGraph && gridGraph.points.map((point, j) => (
                         <g key={`gridline_${j}`}>
@@ -126,7 +143,7 @@ function GameChart( { data }: Props) {
                             { graph.points.map((point, j) => (
                                 <React.Fragment key={`purchase_bars_${i}_${j}`}>
                                     {/* Purchase bars */}
-                                    <line className="hover:stroke-[#e6e6e6] pointer-events-auto cursor-pointer"
+                                    <line clipPath="url(#bar-reveal)" className="hover:stroke-[#e6e6e6] pointer-events-auto cursor-pointer"
                                         x1={point.x + 2 + (4 * i)}
                                         x2={point.x + 2 + (4 * i)}
                                         y1="100%"
@@ -146,7 +163,7 @@ function GameChart( { data }: Props) {
                                 <React.Fragment key={`score_curve_${i}_${j}`}>
                                     {/* Graph curve */}
                                     { j < graph.points.length-1 && (
-                                        <line
+                                        <line className="animate-slowFadeIn"
                                             x1={graph.points[j+1].x}
                                             x2={point.x}
                                             y1={graph.points[j+1].y}
@@ -156,7 +173,7 @@ function GameChart( { data }: Props) {
                                         ></line>
                                     )}
                                     {/* Graph points */}
-                                    <circle
+                                    <circle className="animate-slowFadeIn"
                                         cx={point.x}
                                         cy={point.y}
                                         r={5}
@@ -175,7 +192,7 @@ function GameChart( { data }: Props) {
                                     )}
                                     {/* Curve labels */}
                                     { j == graph.points.length - 1 && (
-                                        <g>
+                                        <g className="animate-slowFadeIn">
                                             <text
                                                 x={point.x + 15}
                                                 y={point.y}
@@ -237,7 +254,7 @@ function GameChart( { data }: Props) {
                             ))}
                         </g>
                     ))}
-                    <g>
+                    <g className="animate-fadeIn">
                         <text
                             x="-40"
                             y="50%"
