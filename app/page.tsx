@@ -1,7 +1,6 @@
-import GameChart from './components/GameChart';
 import { LogParser } from '@/lib/LogParser';
-import ScoreBoard from './components/ScoreBoard';
 import { Suspense } from 'react';
+import GameStats from './components/GameStats';
 
 async function Home() {
 
@@ -14,14 +13,11 @@ async function Home() {
     .then((raw) => new LogParser(raw).getData());
 
     return (
-        <div className="">
-            <main className="m-12 flex flex-col items-center">
-                <div className="max-w-[1000px] w-full">
-                    <Suspense fallback={null}>
-                        <ScoreBoard data={data}></ScoreBoard>
-                    </Suspense>
-                    {/* <GameChart data={data}></GameChart> */}
-                </div>
+        <div>
+            <main className="m-12 flex items-center justify-center">
+                <Suspense fallback={null}>
+                    <GameStats data={data}></GameStats>
+                </Suspense>
             </main>
         </div>
     );
