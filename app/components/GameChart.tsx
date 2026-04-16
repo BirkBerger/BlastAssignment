@@ -97,8 +97,8 @@ function GameChart( { data }: Props) {
     }
 
     return (
-        <div>
-            <div className="h-[500px] w-[70%] max-w-[1000px] relative my-12 ml-16 mr-auto">
+        <div className="mb-10">
+            <div className="h-[500px] w-[70%] relative my-12 ml-16 mr-auto">
                 <svg className="w-full h-full absolute overflow-visible pointer-events-none">
                     <defs>
                         {/* Bar animation */}

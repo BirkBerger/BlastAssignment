@@ -4,9 +4,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { GameData, Player } from "@/types/log.types";
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { TEAM_COLORS } from "../constants/colors";
+import { THEME_COLORS } from "../constants/colors";
 import ArrowButton from "./ArrowButton";
 import PlayerCard from "./PlayerCard";
+import { FONT_SIZE } from "../constants/font-size";
+import TeamLogo from "./TeamLogo";
 
 interface Props {
     data: GameData;
@@ -35,8 +37,6 @@ function ScoreBoard({ data }: Props) {
         team.sort((p1, p2) => (p2[sortBy.field] - p1[sortBy.field]) * sortBy.dir);
     });
 
-    const playerBgClasses = (playerId: string) => `py-1 px-2 cursor-pointer ${playerId == hoveredPlayer?.id ? 'bg-[#3838b2]' : ""} ${playerId == activePlayer?.id ? 'bg-[#3c3c3c]' : ""}`
-
     const handleSort = (field: Field) => {
         setSortBy((prev) => ({
             field,
@@ -56,41 +56,76 @@ function ScoreBoard({ data }: Props) {
     }
 
     return (
-        <div>
-            <div className="grid grid-cols-4 m-12 gap-y-[0.5] text-center max-w-[1000px]">
-                <div></div>
-                { Object.values(Field).map((field, i) => (
-                    <ArrowButton key={`field_${i}`}
-                        field={field}
-                        clickedButton={sortBy}
-                        onClick={() => handleSort(field)}
-                        ></ArrowButton>
-                )) }
-                { teams.map((team, i) => (
-                    <React.Fragment key={`team_${i}`}>
-                        <h2 className="col-span-4 pt-4 text-left" style={{ borderBottom: `2px solid ${TEAM_COLORS[i]}`, color: `${TEAM_COLORS[i]}` }}>
-                            {data.teamNames[i]}
-                        </h2>
-                        { team.map((player, j) => (
-                            <div key={`player_${j}`} className="contents" onClick={() => handlePlayerClick(player)} onMouseEnter={() => setHoveredPlayer(player)} onMouseLeave={() => setHoveredPlayer(null)}>
-                                <div className={`text-left ${playerBgClasses(player.id)}`}>
-                                    {player.name}
+        <div className="flex flex-col gap-4">
+            <div className="p-4 animate-fadeIn flex flex-col gap-4 rounded-[15]" style={{ backgroundColor: THEME_COLORS[0]}}>
+                <div className="flex items-center justify-center gap-4 relative">
+                    { teams.map((team, i) => (
+                        <React.Fragment key={`team_${i}`}>
+                            <div className={`flex items-center justify-end gap-4 flex-1 ${ i == 1 ? "flex-row-reverse" : ""}`}>
+                                <div className="">
+                                    <div className={`w-[10vw] max-w-[110px] absolute bottom-0 ${ i == 1 ? "right-0" : "left-0"}`}>
+                                        <TeamLogo name={data.teamNames[i]}></TeamLogo>
+                                    </div>
                                 </div>
-                                <div className={playerBgClasses(player.id)}>
-                                    {player.kills}
+                                <div className={FONT_SIZE.md}>
+                                    {data.teamNames[i]}
                                 </div>
-                                <div className={playerBgClasses(player.id)}>
-                                    {player.assists}
-                                </div>
-                                <div className={playerBgClasses(player.id)}>
-                                    {player.deaths}
+                                <div className={FONT_SIZE.xl}>
+                                    {data.rounds[data.rounds.length-1].status.score[i]}
                                 </div>
                             </div>
-                        )) }
-                    </React.Fragment>
-                )) }
+                            { i == 0 && (
+                                <div className={`w-[10%] text-center ${FONT_SIZE.xl}`}>
+                                    :
+                                </div> 
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
+                <div className="flex gap-8">
+                    { teams.map((team, i) => (
+                        <div key={`team_${i}`} className="rounded-[15] p-4 flex-1" style={{ backgroundColor: THEME_COLORS[1] }}>
+                            <div className="flex">
+                                <div className="flex-2"></div>
+                                { Object.values(Field).map((field, j) => (
+                                    <div key={`field_${j}`} className="flex-1 flex justify-center">
+                                        <ArrowButton
+                                            field={field}
+                                            clickedButton={sortBy}
+                                            onClick={() => handleSort(field)}
+                                            ></ArrowButton>
+                                    </div>
+                                )) }
+                            </div>
+                            { team.map((player, j) => (
+                                <div key={`player_${j}`} className={`flex text-center cursor-pointer rounded-[8] py-1 px-2 border border-transparent ${FONT_SIZE.md}`} 
+                                    style={{
+                                        backgroundColor: player.id == hoveredPlayer?.id ? THEME_COLORS[0] : j % 2 == 0 ? THEME_COLORS[2] : "",
+                                        borderColor: player.id == hoveredPlayer?.id ? "white" : ""
+                                        }} 
+                                    onClick={() => handlePlayerClick(player)}
+                                    onMouseEnter={() => setHoveredPlayer(player)}
+                                    onMouseLeave={() => setHoveredPlayer(null)}
+                                    >
+                                    <div className="flex-2 text-left font-bold">
+                                        {player.name}
+                                    </div>
+                                    <div className="flex-1">
+                                        {player.kills}
+                                    </div>
+                                    <div className="flex-1">
+                                        {player.assists}
+                                    </div>
+                                    <div className="flex-1">
+                                        {player.deaths}
+                                    </div>
+                                </div>
+                            )) }
+                        </div>
+                    ))}
+                </div>
             </div>
-            <PlayerCard player={activePlayer} cardColor={TEAM_COLORS[activePlayer?.teamIndex || 0]} teamName={data.teamNames[activePlayer?.teamIndex || 0]}></PlayerCard>
+            <PlayerCard player={activePlayer}></PlayerCard>
         </div>
     )
 }

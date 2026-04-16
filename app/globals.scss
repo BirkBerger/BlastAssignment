@@ -1,24 +1,21 @@
 @import "tailwindcss";
 
 :root {
-    background-color: rgb(37, 37, 37);
-    color: white;
+    color: #424240;
 
-    --ct-color: #5d79ae;
-    --terrorist-color: #de9b35;
-    --team-1-color: #FFFF00;
-    --team-1-color-dark: rgba(212, 212, 31, 0.663);
-    --team-2-color: #ff4901;
-    --team-2-color-dark: rgba(219, 79, 24, 0.608);
+    --ct-color: #4252a0;
+    --terrorist-color: #f7b04c;
+
+    --theme-color-1: #d7d7fc;
+    --theme-color-2: #a0a0f6;
+    --theme-color-3: #8a8aef;
+    --theme-color-4: #5262b4;
 }
 
 body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 600;
     margin: 0;
-    font-family: var(--paragraph-font);
-}
-
-h1 {
-    font-family: var(--header-font);
 }
 
 @keyframes fadeIn {
