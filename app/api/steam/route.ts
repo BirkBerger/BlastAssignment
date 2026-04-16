@@ -19,7 +19,8 @@ export async function GET(req: NextRequest): Promise<NextResponse<{ data: SteamI
         const player = data.response.players[0];
         const steamInfo: SteamInfo = {
             playerName: player.personaname,
-            playerAvatar: player.avatarfull
+            playerAvatar: player.avatarfull,
+            playerSteamUrl: player.profileurl
         }
 
         return NextResponse.json({ data: steamInfo }, { status: 200, statusText: "Succesfully fetched Steam player." });

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from "next/link";
 import { Player } from "@/types/log.types";
 import React, { useEffect, useState } from "react";
 import steamService from '../services/steam-service';
@@ -56,7 +57,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                             <div className={FONT_SIZE.xl}>
                                 {player.name}
                             </div>
-                            <div className="relative">
+                            <Link className="relative cursor-pointer" href={steamInfo?.playerSteamUrl || ""} target="_blank">
                                 {steamInfo && (
                                     <img className="rounded-[10] max-h-20 object-cover animate-fadeIn"
                                         src={steamInfo?.playerAvatar}
@@ -68,7 +69,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                                     src="/steam_logo.png"
                                     alt="STEAM logo.">
                                 </img>
-                            </div>
+                            </Link>
                         </div>
                         <div className="flex gap-3 h-full">
                             {cellInCell(player.kills, "Kills")}
