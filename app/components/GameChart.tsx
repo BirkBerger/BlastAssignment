@@ -1,8 +1,10 @@
 'use client'
 
 import { GameData } from "@/types/log.types";
-import React, { useEffect, useState } from "react";
-import { SIDE_COLORS, TEAM_COLORS, TEAM_COLORS_DARK } from "../constants/colors";
+import React, { useEffect, useRef, useState } from "react";
+import { SIDE_COLORS, TEAM_COLORS, TEAM_COLORS_DARK, THEME_COLORS } from "../constants/colors";
+import { FONT_SIZE } from "../constants/font-size";
+import TeamLogo from "./TeamLogo";
 
 interface Props {
     data: GameData;
@@ -11,47 +13,39 @@ interface Props {
 class Point {
     x: number = 0;
     y: number = 0;
-    color: string = SIDE_COLORS.CT;
-    yLabel: string = "";
+    color?: string = SIDE_COLORS.CT;
+    yLabel?: string = "";
 
     constructor(planeHeight: number) {
         this.y = planeHeight;
     }
 }
 
-class Chart {
-    points: Point[] = [];
-    color: string = "";
-
-    constructor(color: string, firstPoint?: Point) {
-        this.color = color;
-        if (firstPoint) this.points.push(firstPoint);
-    }
-}
-
 function GameChart( { data }: Props) {
 
-    const [gridGraph, setGridGraph] = useState<Chart>();
-    const [scoreGraphs, setScoreGraphs] = useState<Chart[]>([]);
-    const [purchaseGraphs, setPurchaseGraphs] = useState<Chart[]>([]);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [gridGraph, setGridGraph] = useState<Point[]>();
+    const [scoreGraphs, setScoreGraphs] = useState<[Point[], Point[]]>([[],[]]);
+    const [purchaseGraphs, setPurchaseGraphs] = useState<[Point[], Point[]]>([[],[]]);
     const [barHoverIdx, setBarHoverIdx] = useState({graph: -1, point: -1});
+    const [turningPoint, setTurningPoint] = useState<Point | null>(null);
 
-    const gridColor = "#585858";
-    const axisLabelColor = "#d5d5d5";
-    
     useEffect(() => {
-        const chartWidth = Math.min((window.innerWidth / 100) * 70, 1000);
-        const chartHeight = 500;
-        initChart(chartWidth, chartHeight);
+        if (!containerRef.current) return;
+
+        const observer = new ResizeObserver((entries) => {
+            const { width, height } = entries[0].contentRect;
+            initChart(width, height);
+        });
+
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
     }, []);
 
     const initChart = (planeWidth: number, planeHeight: number) => {
-        const scoreGraphs = Array.from({ length: 2 }, (_, i) => 
-            new Chart(TEAM_COLORS[i], new Point(planeHeight))
-        );
-        const purchaseBars = Array.from({ length: 2 }, (_, i) =>
-            new Chart(TEAM_COLORS_DARK[i])
-        );
+        const scoreGraphs: [Point[], Point[]] = [[ new Point(planeHeight)],[ new Point(planeHeight)]];
+        const purchaseBars: [Point[], Point[]] = [[],[]];
+        let turningPoint: Point | null = null;
 
         // Scale data to chart size
         const totalGameTime = data.rounds.reduce((acc, round) => acc + round.duration, 0);
@@ -68,10 +62,16 @@ function GameChart( { data }: Props) {
 
         // Build chart
         data.rounds.forEach((round) => {
+            // Set turning point
+            const hasTeamSidesChanged = round.status.teamSides[0] == 1;
+            if (!turningPoint && hasTeamSidesChanged) {
+                turningPoint = { x, y: planeHeight };
+            }
+
             // Draw bars at the beginning of round
             purchaseBars.forEach((graph, j) => {
                 const moneySpend = round.status.moneySpend[j];
-                graph.points.push({
+                graph.push({
                     x,
                     y: planeHeight - oneYRight * moneySpend,
                     yLabel: `$${moneySpend}`,
@@ -82,7 +82,7 @@ function GameChart( { data }: Props) {
             x += (oneX * round.duration);
             scoreGraphs.forEach((graph, j) => {
                 const score = round.status.score[j];
-                graph.points.push({
+                graph.push({
                     x,
                     y: planeHeight - oneYLeft * score,
                     color: round.status.teamSides[0] == j ? SIDE_COLORS.CT : SIDE_COLORS.TERRORIST,
@@ -94,12 +94,16 @@ function GameChart( { data }: Props) {
         setGridGraph(scoreGraphs[0]);
         setScoreGraphs(scoreGraphs);
         setPurchaseGraphs(purchaseBars);
+        setTurningPoint(turningPoint)
     }
 
     return (
-        <div className="mb-10">
-            <div className="h-[500px] w-[70%] relative my-12 ml-16 mr-auto">
-                <svg className="w-full h-full absolute overflow-visible pointer-events-none">
+        <div className="rounded-[15] py-8 px-10 flex flex-col gap-8" style={{backgroundColor: THEME_COLORS[0]}}>
+            <div className={FONT_SIZE.lg}>
+                Bang for Your Buck
+            </div>
+            <div ref={containerRef} className="h-[500px] relative mx-8 rounded-[15] rounded-tr-none" style={{backgroundColor: THEME_COLORS[1]}}>
+                <svg className="w-full max-w-full h-full absolute overflow-visible pointer-events-none">
                     <defs>
                         {/* Bar animation */}
                         <clipPath id="bar-reveal">
@@ -118,38 +122,40 @@ function GameChart( { data }: Props) {
                         </clipPath>
                     </defs>
                     {/* Grid lines */}
-                    { gridGraph && gridGraph.points.map((point, j) => (
-                        <g key={`gridline_${j}`}>
-                            <line
-                                x1={point.x}
-                                x2={point.x}
-                                y1={gridGraph.points[0].y}
-                                y2={gridGraph.points[gridGraph.points.length-1].y}
-                                stroke={gridColor}
-                                strokeWidth="1"
-                            ></line>
-                            <line
-                                x1={gridGraph.points[0].x}
-                                x2={gridGraph.points[gridGraph.points.length-1].x}
-                                y1={point.y}
-                                y2={point.y}
-                                stroke={gridColor}
-                                strokeWidth="1"
-                            ></line>
-                        </g>
+                    { gridGraph && gridGraph.map((point, j) => (
+                        <line key={`gridline_${j}`} className="opacity-30"
+                            x1={point.x}
+                            x2={point.x}
+                            y1={gridGraph[0].y}
+                            y2={gridGraph[gridGraph.length-1].y}
+                            stroke={THEME_COLORS[0]}
+                            strokeWidth="1"
+                        ></line>
                     ))}
+                    {/* Turning point line */}
+                    { turningPoint && (
+                        <line className="animate-fadeIn"
+                            x1={turningPoint?.x}
+                            x2={turningPoint?.x}
+                            y1="100%"
+                            y2="0"
+                            strokeDasharray="8 6"
+                            stroke={THEME_COLORS[3]}
+                            strokeWidth="2"
+                        ></line>
+                    )}
                     { purchaseGraphs.length > 0 && purchaseGraphs.map((graph, i) => (
                         <g key={`purchase_graph_bars_${i}`}>
-                            { graph.points.map((point, j) => (
+                            { graph.map((point, j) => (
                                 <React.Fragment key={`purchase_bars_${i}_${j}`}>
                                     {/* Purchase bars */}
-                                    <line clipPath="url(#bar-reveal)" className="hover:stroke-[#e6e6e6] pointer-events-auto cursor-pointer"
-                                        x1={point.x + 2 + (4 * i)}
-                                        x2={point.x + 2 + (4 * i)}
+                                    <line clipPath="url(#bar-reveal)" className="hover:stroke-white pointer-events-auto cursor-pointer  opacity-60"
+                                        x1={point.x + 3 + (6 * i)}
+                                        x2={point.x + 3 + (6 * i)}
                                         y1="100%"
                                         y2={point.y}
-                                        stroke={graph.color}
-                                        strokeWidth={4}
+                                        stroke={point.color}
+                                        strokeWidth="0.5vw"
                                         onMouseEnter={() => setBarHoverIdx({graph: i, point: j})}
                                         onMouseLeave={() => setBarHoverIdx({graph: -1, point: -1})}
                                     ></line>
@@ -159,63 +165,51 @@ function GameChart( { data }: Props) {
                     ))}
                     { scoreGraphs.length > 0 && scoreGraphs.map((graph, i) => (
                         <g key={`score_graph_curves_${i}`}>
-                            { graph.points.map((point, j) => (
+                            { graph.map((point, j) => (
                                 <React.Fragment key={`score_curve_${i}_${j}`}>
                                     {/* Graph curve */}
-                                    { j < graph.points.length-1 && (
+                                    { j < graph.length-1 && (
                                         <line className="animate-slowFadeIn"
-                                            x1={graph.points[j+1].x}
+                                            x1={graph[j+1].x}
                                             x2={point.x}
-                                            y1={graph.points[j+1].y}
+                                            y1={graph[j+1].y}
                                             y2={point.y}
-                                            stroke={graph.color}
+                                            stroke="white"
                                             strokeWidth="2"
                                         ></line>
                                     )}
                                     {/* Graph points */}
-                                    <circle className="animate-slowFadeIn"
-                                        cx={point.x}
-                                        cy={point.y}
-                                        r={5}
-                                        fill={point.color}
-                                    />
-                                    {/* X-axis labels */}
+                                    { j > 0 && (point.y < graph[j-1].y) && (
+                                        <circle className="animate-slowFadeIn"
+                                            cx={point.x}
+                                            cy={point.y}
+                                            r={8}
+                                            fill={point.color}
+                                        />
+                                    ) }
+                                    {/* X-axis ticks */}
                                     { j > 0 && (
                                         <text
-                                            x={point.x - ((point.x - graph.points[j-1].x) / 2)}
-                                            y={graph.points[0].y + 20}
-                                            fill={axisLabelColor}
+                                            x={point.x - ((point.x - graph[j-1].x) / 2)}
+                                            y={graph[0].y + 20}
+                                            fill={THEME_COLORS[3]}
                                             fontSize="clamp(8px, 1vw, 10px)"
                                             textAnchor="middle">
                                             {j}
                                         </text>
                                     )}
                                     {/* Curve labels */}
-                                    { j == graph.points.length - 1 && (
-                                        <g className="animate-slowFadeIn">
-                                            <text
-                                                x={point.x + 15}
-                                                y={point.y}
-                                                fill={graph.color}
-                                                fontSize="clamp(10px, 2.3vw, 25px)"
-                                                dominantBaseline="middle">
-                                                {data.teamNames[i]}
-                                            </text>
-                                            <text
-                                                x={point.x + 15}
-                                                y={point.y - 18}
-                                                fill="#96dafe"
-                                                fontSize="clamp(9px, 1.5vw, 20px)">
-                                                {point.y == 0 ? "Game winner" : "Game loser"}
-                                            </text>
-                                        </g>
+                                    { j == graph.length - 1 && (
+                                        <foreignObject x={point.x + 10} y={point.y - 10} width={35} height={30}>
+                                            <TeamLogo name={data.teamNames[i]} />
+                                        </foreignObject>
                                     )}
-                                    {/* Y-axis labels */}
+                                    {/* Y-axis ticks */}
                                     <text
                                         x={-14}
                                         y={point.y}
-                                        fill={axisLabelColor}
                                         fontSize="12"
+                                        fill={THEME_COLORS[3]}
                                         textAnchor="middle"
                                         dominantBaseline="middle">
                                         { point.yLabel }
@@ -226,24 +220,23 @@ function GameChart( { data }: Props) {
                     ))}
                     { purchaseGraphs.length > 0 && purchaseGraphs.map((graph, i) => (
                         <g key={`purchase_graph_label_${i}`}>
-                            { graph.points.map((point, j) => (
+                            { graph.map((point, j) => (
                                 <g key={`purchase_label_${i}_${j}`}>
-                                    {/* Bar labels */}
-                                    { barHoverIdx.graph == i && barHoverIdx.point == j && (
+                                    {/* Bar tooltip */}
+                                    { barHoverIdx.graph == i && barHoverIdx.point == j && point.yLabel && (
                                         <g>
                                             <rect
                                                 x={point.x - (point.yLabel.length * 10) / 2 + 2 + (4 * i)}
                                                 y={point.y - 11}
                                                 width={point.yLabel.length * 10}
                                                 height={20}
-                                                fill="#e6e6e6"
+                                                fill="white"
                                                 rx={5}
                                             />
                                             <text
                                                 x={point.x + 2 + (4 * i)}
                                                 y={point.y}
                                                 fontSize={14}
-                                                fill="black"
                                                 textAnchor="middle"
                                                 dominantBaseline="middle">
                                                 {point.yLabel}
@@ -254,12 +247,13 @@ function GameChart( { data }: Props) {
                             ))}
                         </g>
                     ))}
+                    {/* Axis legends */}
                     <g className="animate-fadeIn">
                         <text
                             x="-40"
                             y="50%"
-                            fill={axisLabelColor}
                             fontSize="14px"
+                            fill={THEME_COLORS[3]}
                             dominantBaseline="middle"
                             textAnchor="middle"
                             writingMode="vertical-rl">
@@ -268,8 +262,8 @@ function GameChart( { data }: Props) {
                         <text
                             x="50%"
                             y="108%"
-                            fill={axisLabelColor}
                             fontSize="14px"
+                            fill={THEME_COLORS[3]}
                             textAnchor="middle"
                             dominantBaseline="middle">
                             Rounds
@@ -282,7 +276,7 @@ function GameChart( { data }: Props) {
                     { Object.entries(SIDE_COLORS).map(([key, value], i) => (
                         <React.Fragment key={`side_color_${i}`}>
                             <div className="h-3 w-3 rounded-full" style={{ backgroundColor: value }}></div>
-                            <div>{ key }</div>
+                            <div>{ key } win</div>
                         </React.Fragment>
                     )) }
                 </div>

@@ -26,7 +26,7 @@ function GameStats({ data }: Props) {
         <div className="max-w-[1000px] w-full flex flex-col gap-8">
             <ScoreBoard data={data} onPlayerSelect={(p) => setSelectedPlayer(p)}></ScoreBoard>
             <PlayerCard player={selectedPlayer}></PlayerCard>
-            {/* <GameChart></GameChart> */}
+            <GameChart data={data}></GameChart>
         </div>
     )
 
