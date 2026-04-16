@@ -20,11 +20,16 @@ enum Field {
     deaths = 'deaths'
 }
 
+type SortBy = { field: Field, dir: 1 | -1 };
+
 function ScoreBoard({ data }: Props) {
 
     const router = useRouter();
     const searchParams = useSearchParams();
-    const [sortBy, setSortBy] = useState<{ field: Field, dir: 1 | -1 }>({ field: Field.kills, dir: 1 });
+    const [sortBy, setSortBy] = useState<[SortBy, SortBy]>([
+        { field: Field.kills, dir: 1 },
+        { field: Field.kills, dir: 1 }
+    ]);
     const [activePlayer, setActivePlayer] = useState<Player | null>(null);
     const [hoveredPlayer, setHoveredPlayer] = useState<Player | null>(null);
 
@@ -33,15 +38,16 @@ function ScoreBoard({ data }: Props) {
         return acc;
     }, [[], []]);
 
-    teams.forEach((team) => {
-        team.sort((p1, p2) => (p2[sortBy.field] - p1[sortBy.field]) * sortBy.dir);
+    teams.forEach((team, i) => {
+        team.sort((p1, p2) => (p2[sortBy[i].field] - p1[sortBy[i].field]) * sortBy[i].dir);
     });
 
-    const handleSort = (field: Field) => {
-        setSortBy((prev) => ({
+    const handleSort = (field: Field, teamIdx: number) => {
+        sortBy[teamIdx] = {
             field,
-            dir: prev.field == field && prev.dir == 1 ? -1 : 1
-        }))
+            dir: sortBy[teamIdx].field == field && sortBy[teamIdx].dir == 1 ? -1 : 1
+        };
+        setSortBy({...sortBy});
     };
 
     useEffect(() => {
@@ -91,8 +97,8 @@ function ScoreBoard({ data }: Props) {
                                     <div key={`field_${j}`} className="flex-1 flex justify-center">
                                         <ArrowButton
                                             field={field}
-                                            clickedButton={sortBy}
-                                            onClick={() => handleSort(field)}
+                                            clickedButton={sortBy[i]}
+                                            onClick={() => handleSort(field, i)}
                                             ></ArrowButton>
                                     </div>
                                 )) }

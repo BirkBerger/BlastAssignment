@@ -6,7 +6,7 @@ interface Props {
     onClick: () => void
 }
 
-function ArrowButton({ field, clickedButton, onClick }: Props) {
+const ArrowButton = React.memo(function ArrowButton({ field, clickedButton, onClick }: Props) {
 
     const arrowDir = clickedButton.field == field && clickedButton.dir == 1 ? 90 : -90;
 
@@ -19,6 +19,6 @@ function ArrowButton({ field, clickedButton, onClick }: Props) {
         </button>
     )
 
-}
+})
 
 export default ArrowButton;
