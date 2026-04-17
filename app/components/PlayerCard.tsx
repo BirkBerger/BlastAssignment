@@ -57,7 +57,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                             <div className={FONT_SIZE.xl}>
                                 {player.name}
                             </div>
-                            <Link className="relative cursor-pointer" href={steamInfo?.playerSteamUrl || ""} target="_blank">
+                            <Link className="relative cursor-pointer h-20" href={steamInfo?.playerSteamUrl || ""} target="_blank">
                                 {steamInfo && (
                                     <img className="rounded-[10] max-h-20 object-cover animate-fadeIn"
                                         src={steamInfo?.playerAvatar}

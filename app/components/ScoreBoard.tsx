@@ -59,13 +59,13 @@ function ScoreBoard({ data, onPlayerSelect }: Props) {
             <div className="flex items-center justify-center gap-4 relative">
                 { teams.map((team, i) => (
                     <React.Fragment key={`team_${i}`}>
-                        <div className={`flex items-center justify-end gap-4 flex-1 ${ i == 1 ? "flex-row-reverse" : ""}`}>
+                        <div className={`flex items-center justify-end gap-3 flex-1 ${ i == 1 ? "flex-row-reverse" : ""}`}>
                             <div className="">
-                                <div className={`w-[10vw] max-w-[110px] absolute bottom-0 ${ i == 1 ? "right-0" : "left-0"}`}>
+                                <div className={`w-[11vw] max-w-[110px] absolute bottom-0 ${ i == 1 ? "right-0" : "left-0"}`}>
                                     <TeamLogo name={data.teamNames[i]}></TeamLogo>
                                 </div>
                             </div>
-                            <div className={FONT_SIZE.md}>
+                            <div className={`opacity-0 sm:opacity-100 ${FONT_SIZE.md}`}>
                                 {data.teamNames[i]}
                             </div>
                             <div className={FONT_SIZE.xl}>
@@ -73,18 +73,20 @@ function ScoreBoard({ data, onPlayerSelect }: Props) {
                             </div>
                         </div>
                         { i == 0 && (
-                            <div className={`w-[10%] text-center ${FONT_SIZE.xl}`}>
+                            <div className={`w-[5%] text-center ${FONT_SIZE.xl}`}>
                                 :
                             </div> 
                         )}
                     </React.Fragment>
                 ))}
             </div>
-            <div className="flex gap-8">
+            <div className="flex gap-4 sm:gap-8 flex-wrap">
                 { teams.map((team, i) => (
-                    <div key={`team_${i}`} className="rounded-[15] p-4 flex-1" style={{ backgroundColor: THEME_COLORS[1] }}>
-                        <div className="flex">
-                            <div className="flex-2"></div>
+                    <div key={`team_${i}`} className="rounded-[15] p-4 flex-1 min-w-[230px] flex flex-col justify-end" style={{ backgroundColor: THEME_COLORS[1] }}>
+                        <div className="flex items-center">
+                            <div className={`flex-2 opacity-100 sm:opacity-0 ${FONT_SIZE.sm}`}>
+                                {data.teamNames[i]}
+                            </div>
                             { Object.values(Field).map((field, j) => (
                                 <div key={`field_${j}`} className="flex-1 flex justify-center">
                                     <ArrowButton

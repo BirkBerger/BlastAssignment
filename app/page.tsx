@@ -14,7 +14,7 @@ async function Home() {
 
     return (
         <div>
-            <main className="m-12 flex items-center justify-center">
+            <main className="m-[6vw] flex items-center justify-center">
                 <Suspense fallback={null}>
                     <GameStats data={data}></GameStats>
                 </Suspense>
