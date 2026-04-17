@@ -7,8 +7,11 @@ export interface Round {
     }
 };
 
-export interface WeaponShots {
-    [ weaponName: string ]: number
+export interface WeaponUse {
+    [ weaponName: string ]: {
+        shots: number,
+        damage: number
+    }
 };
 
 export interface GrenadesThrown {
@@ -27,7 +30,7 @@ export interface Player {
     deaths: number;
     assists: number;
     blindness: number;
-    weaponShots: WeaponShots;
+    weaponUse: WeaponUse;
     grenadesThrown: GrenadesThrown;
     hitgroupShots: HitgroupShots;
     mapDamage: number;

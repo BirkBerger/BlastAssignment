@@ -149,11 +149,15 @@ export class LogParser {
                 const attacker = this.getPlayer(matchGroup.id, matchGroup.name, matchGroup.side);
                 if (attacker) {
                     const weapon = matchGroup.weapon;
-                    if (weapon != "inferno") {
-                    const currentHitgroupShots = attacker.hitgroupShots[matchGroup.hitGroup] || 0;
-                    attacker.hitgroupShots[matchGroup.hitGroup] = currentHitgroupShots + 1
-                        const currentWeaponShots = attacker.weaponShots[weapon] || 0;
-                        attacker.weaponShots[matchGroup.weapon] = currentWeaponShots + 1;
+                    const isShootingWeapon = weapon != "inferno";
+                    if (isShootingWeapon) {
+                        const currentHitgroupShots = attacker.hitgroupShots[matchGroup.hitGroup] || 0;
+                        attacker.hitgroupShots[matchGroup.hitGroup] = currentHitgroupShots + 1
+                    }
+                    const currentWeaponUse = attacker.weaponUse[weapon];
+                    attacker.weaponUse[weapon] = {
+                        shots: (isShootingWeapon) ? (currentWeaponUse?.shots || 0) + 1 : 0,
+                        damage: (currentWeaponUse?.damage || 0) + parseInt(matchGroup.damage)
                     }
                 }
             }
@@ -193,7 +197,7 @@ export class LogParser {
             deaths: 0,
             assists: 0,
             blindness: 0,
-            weaponShots: {},
+            weaponUse: {},
             grenadesThrown: {},
             hitgroupShots: {},
             mapDamage: 0

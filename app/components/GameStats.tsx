@@ -24,9 +24,17 @@ function GameStats({ data }: Props) {
 
     return (
         <div className="max-w-[1000px] w-full flex flex-col gap-8">
-            <ScoreBoard data={data} onPlayerSelect={(p) => setSelectedPlayer(p)}></ScoreBoard>
-            <PlayerCard player={selectedPlayer}></PlayerCard>
-            <GameChart data={data}></GameChart>
+            <ScoreBoard
+                data={data}
+                onPlayerSelect={(p) => setSelectedPlayer(p)}>
+            </ScoreBoard>
+            <PlayerCard
+                player={selectedPlayer}
+                numberOfRounds={data.rounds.length}>
+            </PlayerCard>
+            <GameChart
+                data={data}>
+            </GameChart>
         </div>
     )
 

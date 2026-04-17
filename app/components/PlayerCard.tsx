@@ -10,20 +10,25 @@ import { FONT_SIZE } from "../constants/font-size";
 import { THEME_COLORS } from "../constants/colors";
 
 interface Props {
-    player: Player | null
+    player: Player | null,
+    numberOfRounds: number
 }
 
-const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
+const PlayerCard = React.memo(function PlayerCard({ player, numberOfRounds }: Props) {
 
     const [steamInfo, setSteamInfo] = useState<SteamInfo | null>();
 
-    const mostUsedWeapon = Object.entries(player?.weaponShots || {}).reduce((acc, [weapon, shots]) => {
+    const mostUsedWeapon = Object.entries(player?.weaponUse || {}).reduce((acc, [weapon, { shots, damage }]) => {
         return acc.shots > shots ? acc : { weapon, shots };
     }, { weapon: "", shots: 0 });
 
     const grenadesThrownTotal = Object.values(player?.grenadesThrown || {}).reduce((acc, throws) => {
         return acc + throws;
-    }, 0)
+    }, 0);
+
+    const damageTotal = Object.values(player?.weaponUse || {}).reduce((acc, { shots, damage }) => {
+        return acc += damage;
+    }, 0);
 
     useEffect(() => {
         setSteamInfo(null);
@@ -36,7 +41,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
 
     const cellClasses = "flex relative rounded-[20] p-4 xs:p-8"
     const cellBg = <div className="absolute z-[-1] top-3 left-3 bottom-3 right-3 rounded-[20] animate-fadeIn" ></div>;
-    const cellInCell = (stat: number, statName: string) => (
+    const cellInCell = (stat: number | string, statName: string) => (
         <div className="rounded-[15] flex flex-col items-center justify-center w-full p-1 animate-fadeIn" style={{ backgroundColor: THEME_COLORS[1] }}>
             <div className={`${FONT_SIZE.lg}`}>
                 {stat}
@@ -72,9 +77,9 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                             </Link>
                         </div>
                         <div className="flex gap-3 h-full">
-                            {cellInCell(player.kills, "Kills")}
-                            {cellInCell(player.deaths, "Deaths")}
-                            {cellInCell(player.assists, "Assists")}
+                            {cellInCell((player.kills/player.deaths).toFixed(2), "Kills per Deaths")}
+                            {cellInCell((player.kills/numberOfRounds).toFixed(2), "Kills per round")}
+                            {cellInCell((damageTotal/numberOfRounds).toFixed(2), "Damage per round")}
                         </div>
                     </div>
                     <div className={`order-last xs:order-none col-span-3 xs:col-span-1 xs:row-span-3 ${cellClasses} flex-col px-4`} style={{ backgroundColor: THEME_COLORS[0] }}>
