@@ -9,6 +9,11 @@ export async function GET(req: NextRequest): Promise<NextResponse<{ data: SteamI
         const id = req.nextUrl.searchParams.get('id');
         if (!id) return NextResponse.json({ data: null }, { status: 400, statusText: "Player ID missing in request."});
 
+        if(!process.env.STEAM_API_KEY) {
+            console.warn("Missing Steam Api-key.");
+            return NextResponse.json({ data: null }, { status: 200, statusText: "Fetched no Steam player." });
+        }
+
         const res = await fetch(`${STEAM_API_BASE_URL}?key=${process.env.STEAM_API_KEY}&steamids=${id}`, {
             next: { revalidate: 3600 } // cache for 1 hour
         });
