@@ -142,7 +142,8 @@ const PlayerCard = React.memo(function PlayerCard({ player, numberOfRounds }: Pr
                         </div>
                         <img className="max-h-full max-w-[85%] object-contain absolute bottom-[-35%] right-[-3%] z-1"
                             src={`/weapons/${mostUsedWeapon.weapon}.png`}
-                            alt={mostUsedWeapon.weapon}>
+                            alt={mostUsedWeapon.weapon}
+                            onError={(e) => e.currentTarget.src = '/fallbacks/weapon.png'}>
                         </img>
                     </div>
                     <div className={`${cellClasses} items-center`} style={{ backgroundColor: THEME_COLORS[0] }}>
