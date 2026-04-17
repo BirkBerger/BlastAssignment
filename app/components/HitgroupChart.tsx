@@ -60,7 +60,7 @@ function HitgroupChart( { hitgroupShots }: Props ) {
 
     return (
         <div className="h-full min-h-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-[20vw] max-w-[250px]">
+            <div className="relative w-full max-w-[250px]">
                 <img className="object-contain" src="/soldier_phoenix.png"
                     alt="Illustration of how player's shots are split across hitgroups.">
                 </img>

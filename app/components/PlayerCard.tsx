@@ -34,10 +34,10 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
 
     }, [player?.id]);
 
-    const cellClasses = "flex relative rounded-[20] p-8"
+    const cellClasses = "flex relative rounded-[20] p-4 xs:p-8"
     const cellBg = <div className="absolute z-[-1] top-3 left-3 bottom-3 right-3 rounded-[20] animate-fadeIn" ></div>;
     const cellInCell = (stat: number, statName: string) => (
-        <div className="rounded-[15] flex flex-col items-center justify-center w-full animate-fadeIn" style={{ backgroundColor: THEME_COLORS[1] }}>
+        <div className="rounded-[15] flex flex-col items-center justify-center w-full p-1 animate-fadeIn" style={{ backgroundColor: THEME_COLORS[1] }}>
             <div className={`${FONT_SIZE.lg}`}>
                 {stat}
             </div>
@@ -50,7 +50,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
     return (
         <div>
             { player && (
-                <div className="grid grid-cols-4 grid-cols-[32fr_8fr_25fr_35fr] gap-5 grid-rows-[minmax(140px,240px)_minmax(100px,200px)_minmax(100px,200px)] text-center">
+                <div className="grid grid-cols-4 grid-cols-[50fr_10fr_40fr] grid-rows-[repeat(auto,4)] xs:grid-cols-[32fr_8fr_25fr_35fr] xs:grid-rows-[min(34vw,230px)_min(15vw,150px)_min(15vw,150px)] gap-5 text-center">
                     <div className={`col-span-3 flex relative rounded-[20] flex-col gap-3 p-4`} style={{ backgroundColor: THEME_COLORS[0] }}>
                         {cellBg}
                         <div className="flex justify-between">
@@ -77,7 +77,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                             {cellInCell(player.assists, "Assists")}
                         </div>
                     </div>
-                    <div className={`row-span-3 ${cellClasses} flex-col`} style={{ backgroundColor: THEME_COLORS[0] }}>
+                    <div className={`order-last xs:order-none col-span-3 xs:col-span-1 xs:row-span-3 ${cellClasses} flex-col px-4`} style={{ backgroundColor: THEME_COLORS[0] }}>
                         {cellBg}
                         <div className={FONT_SIZE.sm}>
                             HIT DISTRIBUTION MAP
@@ -88,7 +88,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                     </div>
                     <div className={`${cellClasses} items-center justify-end`} style={{ backgroundColor: THEME_COLORS[0] }}>
                         {cellBg}
-                        <img className="max-h-full object-contain absolute top-[3%] left-[10px]"
+                        <img className="max-h-full max-w-[50%] object-contain absolute top-[3%] left-[-4%]"
                             src="/chair.png"
                             alt="A chair.">
                         </img>
@@ -104,7 +104,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                     </div>
                     <div className={`${cellClasses} items-center justify-end col-span-2`} style={{ backgroundColor: THEME_COLORS[0] }}>
                         {cellBg}
-                        <img className="max-h-[110%] object-contain absolute left-[20px]"
+                        <img className="max-h-[110%] object-contain absolute left-[2%]"
                             src="/blinded.png"
                             alt="A blind terrorist.">
                         </img>
@@ -135,7 +135,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                         <div className={`self-start text-right grow ${FONT_SIZE.sm}`}>
                             FAVORITE WEAPON
                         </div>
-                        <img className="max-h-35 object-contain absolute bottom-[-40] right-[-10]"
+                        <img className="max-h-full max-w-[85%] object-contain absolute bottom-[-35%] right-[-3%] z-1"
                             src={`/weapons/${mostUsedWeapon.weapon}.png`}
                             alt={mostUsedWeapon.weapon}>
                         </img>
@@ -151,7 +151,7 @@ const PlayerCard = React.memo(function PlayerCard({ player }: Props) {
                                 {grenadesThrownTotal}
                             </div>
                         </div>
-                        <img className="min-w-[30px] max-h-full object-contain absolute right-[-10] top-[-5px]"
+                        <img className="max-h-full max-w-[50%] object-contain absolute top-[-3%] right-[-4%]"
                             src="/grenades.png"
                             alt="Utility grenades">
                         </img>
