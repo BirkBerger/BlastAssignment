@@ -14,7 +14,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<{ data: SteamI
         });
         const data = await res?.json();
 
-        if (!res || !data) NextResponse.json({ data: null }, { status: 500, statusText: "Failed to fetch Steam player." });
+        if (!res || !data) return NextResponse.json({ data: null }, { status: 500, statusText: "Failed to fetch Steam player." });
 
         const player = data.response.players[0];
         const steamInfo: SteamInfo = {
