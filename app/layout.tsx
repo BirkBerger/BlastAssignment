@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.scss";
 
 export const metadata: Metadata = {
-    title: "BLAST Developer Challenge",
-    description: "CS:GO Game analysis by Thea Birk Berger.",
+    title: "CS:GO Game Stats",
+    description: "Explore a CS:GO match scoreboard, player cards and game chart. This site was created as a developer challenge for Blast, by Thea Birk Berger.",
 };
 
 export default function RootLayout({
