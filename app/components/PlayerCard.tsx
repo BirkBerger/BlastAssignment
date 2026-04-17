@@ -53,7 +53,7 @@ const PlayerCard = React.memo(function PlayerCard({ player, numberOfRounds }: Pr
     )
 
     return (
-        <div>
+        <div className="rounded-[20]" style={{ minHeight: "calc(min(34vw, 230px) + min(15vw, 150px) + min(15vw, 150px) + 40px)", backgroundColor: player ? "" : THEME_COLORS[0] }} >
             { player && (
                 <div className="grid grid-cols-4 grid-cols-[50fr_10fr_40fr] grid-rows-[repeat(auto,4)] xs:grid-cols-[32fr_8fr_25fr_35fr] xs:grid-rows-[min(34vw,230px)_min(15vw,150px)_min(15vw,150px)] gap-5 text-center">
                     <div className={`col-span-3 flex relative rounded-[20] flex-col gap-3 p-4`} style={{ backgroundColor: THEME_COLORS[0] }}>
