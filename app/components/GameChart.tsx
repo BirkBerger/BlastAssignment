@@ -98,9 +98,14 @@ function GameChart( { data }: Props) {
     }
 
     return (
-        <div className="rounded-[15] py-8 px-10 flex flex-col gap-8" style={{backgroundColor: THEME_COLORS[0]}}>
-            <div className={FONT_SIZE.lg}>
-                Bang for Your Buck
+        <div className="rounded-[15] py-8 xs:px-10 flex flex-col gap-8" style={{backgroundColor: THEME_COLORS[0]}}>
+            <div className="text-center xs:text-left p-2">
+                <div className={FONT_SIZE.lg}>
+                    Bang for Your Buck
+                </div>
+                <div className={`xs:hidden mt-3 ${FONT_SIZE.md}`}>
+                    Team score progression and round spending
+                </div>
             </div>
             <div ref={containerRef} className="h-[500px] relative mx-8 rounded-[15] rounded-tr-none" style={{backgroundColor: THEME_COLORS[1]}}>
                 <svg className="w-full max-w-full h-full absolute overflow-visible pointer-events-none">
@@ -149,13 +154,15 @@ function GameChart( { data }: Props) {
                             { graph.map((point, j) => (
                                 <React.Fragment key={`purchase_bars_${i}_${j}`}>
                                     {/* Purchase bars */}
-                                    <line clipPath="url(#bar-reveal)" className="hover:stroke-white pointer-events-auto cursor-pointer  opacity-60"
+                                    <line clipPath="url(#bar-reveal)"
+                                        className="pointer-events-auto cursor-pointer"
+                                        style={{ strokeWidth: "clamp(2px, 0.5vw, 7px)" }}
                                         x1={point.x + 3 + (6 * i)}
                                         x2={point.x + 3 + (6 * i)}
                                         y1="100%"
                                         y2={point.y}
-                                        stroke={point.color}
-                                        strokeWidth="0.5vw"
+                                        stroke={barHoverIdx.graph == i && barHoverIdx.point == j ? "white" : point.color }
+                                        opacity={barHoverIdx.graph == i && barHoverIdx.point == j ? 1 : 0.6 }
                                         onMouseEnter={() => setBarHoverIdx({graph: i, point: j})}
                                         onMouseLeave={() => setBarHoverIdx({graph: -1, point: -1})}
                                     ></line>
@@ -189,7 +196,7 @@ function GameChart( { data }: Props) {
                                     ) }
                                     {/* X-axis ticks */}
                                     { j > 0 && (
-                                        <text
+                                        <text className="opacity-0 xs:opacity-100"
                                             x={point.x - ((point.x - graph[j-1].x) / 2)}
                                             y={graph[0].y + 20}
                                             fill={THEME_COLORS[3]}
@@ -205,7 +212,7 @@ function GameChart( { data }: Props) {
                                         </foreignObject>
                                     )}
                                     {/* Y-axis ticks */}
-                                    <text
+                                    <text className="opacity-0 xs:opacity-100"
                                         x={-14}
                                         y={point.y}
                                         fontSize="12"
@@ -248,7 +255,7 @@ function GameChart( { data }: Props) {
                         </g>
                     ))}
                     {/* Axis legends */}
-                    <g className="animate-fadeIn">
+                    <g className="opacity-0 xs:opacity-100 animate-fadeIn">
                         <text
                             x="-40"
                             y="50%"
